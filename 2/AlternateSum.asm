@@ -1,3 +1,17 @@
+section .text
+global _start 
+
+_start:
+    mov edi, 1
+    mov esi, 2
+    mov edx, 3
+    mov ecx, 4
+
+    call alternate_sum4
+    mov ebx, eax
+    mov eax, 1     ; syscall exit
+    int 0x80       ; llamada al kernel
+
 ; parametros: 
 ; x1 --> EDI
 ; x2 --> ESI
