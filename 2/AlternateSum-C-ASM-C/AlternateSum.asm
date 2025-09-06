@@ -8,12 +8,28 @@ extern restar_c
 section .text
 
 alternate_sum_4_using_c:
+    ;prologo
     push rbp ;aca me alinee a 16 de vuelta.
     mov rbp, rsp; seteo el base pointer
-    push rdi
-    push rsi 
+    push r12 ;voy a usar este no-volatil para almacenar EDI. +16
+    push r13 ;voy a usar este no-volatil para almacenar ESI. +24
 
-    pop rsi
-    pop rdi
+    mov r12d, edx; preservo edx para no perderlo (es no-volatil)
+    mov r13d, ecx; preservo ecx para no perderlo (es no-volatil)
+    call sumar_c; recibe los parametros por EDI y ESI.
+
+    mov edi, eax
+    mov esi, r12d
+    call restar_c
+
+    mov edi, eax
+    mov esi, r13d
+    call sumar_c
+
+    ;epilogo
+    
+    pop r13
+    pop r12
     pop rbp 
     ret
+

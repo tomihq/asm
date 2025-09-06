@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int alternate_sum_4_using_c(int x1, int x2, int x3, int x4);
+extern int alternate_sum_4_using_c(int x1, int x2, int x3, int x4);
 
 int main() {
     int x1 = 10, x2 = 5, x3 = 3, x4 = 2;
