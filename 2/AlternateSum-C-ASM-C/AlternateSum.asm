@@ -9,11 +9,10 @@ section .text
 
 alternate_sum_4_using_c:
     ;prologo
-    ;aca estoy en (+8)
-    push rbp ;aca me alinee a 16 de vuelta (+16).
+    push rbp ;aca me alinee a 16 de vuelta 
     mov rbp, rsp; seteo el base pointer
-    push r12 ;voy a usar este no-volatil para almacenar EDI. (+24)
-    push r13 ;voy a usar este no-volatil para almacenar ESI. (+32)
+    push r12 ;voy a usar este no-volatil para almacenar EDI. 
+    push r13 ;voy a usar este no-volatil para almacenar ESI. 
 
     mov r12d, edx; preservo edx para no perderlo, voy usar una copia xq edx es volatil
     mov r13d, ecx; preservo ecx para no perderlo, voy a usar una copia xq ecx es volatil
@@ -28,9 +27,8 @@ alternate_sum_4_using_c:
     call sumar_c
 
     ;epilogo
-    
-    pop r13 ;remuevo r13 de la pila (+24)
-    pop r12 ;remuevo r12 de la pila (+16)
-    pop rbp ;restablezco (+8)
-    ret ;(+0)
+    pop r13 ;remuevo r13 de la pila 
+    pop r12 ;remuevo r12 de la pila 
+    pop rbp ;restablezco rbp al valor anterior 
+    ret 
 
