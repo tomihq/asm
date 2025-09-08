@@ -149,10 +149,30 @@ alternate_sum_8:
   ret
 
 
-; SUGERENCIA: investigar uso de instrucciones para convertir enteros a floats y viceversa
-;void product_2_f(uint32_t * destination, uint32_t x1, float f1);
-;registros: destination[?], x1[?], f1[?]
+;void product_2_f(uint32_t* destination, uint32_t x1, float f1);
+;registros: 
+; destination -> RDI //no volatil
+; x1 -> ESI //no volatil 
+; f1 -> XMM0 //volatil
+; IDEA: El resultado es un uint32_t*, tengo un uint32_t y un float. Lo primero que tengo que hacer para no perder el float es pasar el uint32_t a float. 
+; Luego, hago la multiplicacion de dos floats.
+; Por último paso los floats a enteros.
+; Finalmente, pongo el resultado en la posición de memoria a la que apunta el puntero. 
 product_2_f:
+  ;prologo
+  push rbp
+  mov rbp, rsp
+  ; empiezo
+  ; paso 1: convierto Doubleword Integer a Single Precision Floating-Point Value (int de 32 -> float)
+  cvtsi2ss xmm1, esi      
+  ; paso 2: multiplico dos Single Precision Floating-Point Values (float * float)
+  mulss xmm0, xmm1       
+  ; paso 3: convierto Single Precision Floating-Point Value a Doubleword Integer (float -> int de 32)
+  cvtss2si eax, xmm0     
+  ; paso 4: guardar en *destination
+  mov [rdi], eax  
+  ;epilogo   
+  pop rbp
 	ret
 
 
