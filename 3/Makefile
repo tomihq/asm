@@ -4,7 +4,7 @@ NASM=nasm
 NASMFLAGS=-f elf64 -g -F DWARF
 NASM_ABI_FLAGS=$(NASMFLAGS) -p "abi_enforcer.mac"
 STRUCTS_FILE=structs.h
-STRUCTS_PATH="../3\ -\ Alineación\ y\ Estructuras"
+STRUCTS_PATH="../3"
 
 all: main tester abi_enforcer_tester abi_enforcer_main 
 
