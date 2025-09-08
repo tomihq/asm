@@ -13,7 +13,7 @@ int main() {
 	assert(alternate_sum_8(1, 2, 3, 4, 5, 6, 7, 0) == 4);
 	assert(alternate_sum_8(1, 2, 3, 4, 5, 6, 7, 4) == 0);
 	uint32_t* p = malloc(sizeof(uint32_t));
-	product_2_f(p, 3, 1.5);
+	product_2_f(p, 489, 465.01);
 	printf("%d \n", *p);
 	assert(*p == 4);
 	int32_t n = alternate_sum_8(1, 2, 3, 4, 5, 6, 7, 8);

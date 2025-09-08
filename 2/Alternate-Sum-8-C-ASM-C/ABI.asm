@@ -154,22 +154,26 @@ alternate_sum_8:
 ; destination -> RDI //no volatil
 ; x1 -> ESI //no volatil 
 ; f1 -> XMM0 //volatil
-; IDEA: El resultado es un uint32_t*, tengo un uint32_t y un float. Lo primero que tengo que hacer para no perder el float es pasar el uint32_t a float. 
-; Luego, hago la multiplicacion de dos floats.
-; Por último paso los floats a enteros.
-; Finalmente, pongo el resultado en la posición de memoria a la que apunta el puntero. 
+; IDEA: El resultado es un uint32_t*, tengo un uint32_t y un float. 
+; Lo primero que tengo que hacer es que, como es una multiplicación, el numero resultado puede ser extremadamente grande. Lo cual, para garantizar que me entre, voy a usar double. Es decir, tanto el uint32_t y el float los voy a pasar a double.
+; Luego, hago la multiplicacion de dos double.
+; Por último paso el double a entero.
+; Finalmente, pongo el resultado en la posición de memoria a la que apunta el puntero.
+; Nota: al final, el resultado hay que truncarlo (sacarle los decimales de una) 
 product_2_f:
   ;prologo
   push rbp
   mov rbp, rsp
   ; empiezo
-  ; paso 1: convierto Doubleword Integer a Single Precision Floating-Point Value (int de 32 -> float)
-  cvtsi2ss xmm1, esi      
-  ; paso 2: multiplico dos Single Precision Floating-Point Values (float * float)
-  mulss xmm0, xmm1       
-  ; paso 3: convierto Single Precision Floating-Point Value a Doubleword Integer (float -> int de 32)
-  cvtss2si eax, xmm0     
-  ; paso 4: guardar en *destination
+  ; paso 1: convierto Doubleword Integer a Scalar Double Precision Floating-Point Value (int de 32 -> double)
+  cvtsi2sd xmm1, esi      
+  ; paso 2: convierto Single Precision Floating-Point a Scalar Double Precision Floating-Point (float -> double)
+  cvtss2sd xmm0, xmm0
+  ; paso 3: multiplico dos Double Precision Floating-Point Values (double * double)
+  mulsd xmm0, xmm1      
+  ; paso 4: Convert With Truncation Scalar Double Precision Floating-Point Value to SignedInteger (float -> int de 32)
+  cvttsd2si eax, xmm0     
+  ; paso 5: guardar en *destination
   mov [rdi], eax  
   ;epilogo   
   pop rbp
