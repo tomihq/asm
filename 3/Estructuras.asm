@@ -7,10 +7,10 @@ NODO_OFFSET_CATEGORIA EQU 8
 NODO_OFFSET_ARREGLO EQU 16
 NODO_OFFSET_LONGITUD EQU 24
 NODO_SIZE EQU 32
-PACKED_NODO_OFFSET_NEXT EQU 8
+PACKED_NODO_OFFSET_NEXT EQU 0
 PACKED_NODO_OFFSET_CATEGORIA EQU 8
-PACKED_NODO_OFFSET_ARREGLO EQU 8
-PACKED_NODO_OFFSET_LONGITUD EQU 8
+PACKED_NODO_OFFSET_ARREGLO EQU 9
+PACKED_NODO_OFFSET_LONGITUD EQU 17
 PACKED_NODO_SIZE EQU 8
 LISTA_OFFSET_HEAD EQU 8
 LISTA_SIZE EQU 8
@@ -53,5 +53,19 @@ cantidad_total_de_elementos:
 ;extern uint32_t cantidad_total_de_elementos_packed(packed_lista_t* lista);
 ;registros: lista[?]
 cantidad_total_de_elementos_packed:
-	ret
+	push rbp
+	mov rbp, rsp 
+	xor eax, eax
+	mov rbx, [rdi]
+
+	.ciclo:
+		cmp rbx, 0
+		je .fin 
+		add eax, DWORD[rbx + PACKED_NODO_OFFSET_LONGITUD]
+		mov rbx, [rbx]
+		jmp .ciclo 
+	
+	.fin: 
+		pop rbp 
+		ret
 
