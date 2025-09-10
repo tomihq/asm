@@ -8,6 +8,11 @@
 #include "Memoria.h"
 
 int main() {
-	/* Acá pueden realizar sus propias pruebas */
+	char s[] = "hola";
+	char* p = &s[0];
+	assert(strLen(p) == 4);
+	char s2[]= "";
+	char *p2 = &s2[0];
+	assert(strLen(p2) == 0);
 	return 0;
 }
