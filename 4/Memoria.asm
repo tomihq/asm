@@ -25,7 +25,7 @@ strCmp:
 	mov r8, rdi ;char 1
 	mov r9, rsi ;char 2
 	xor eax, eax 
-	.ciclo:
+	.loop_chars:
 		mov r10b, BYTE[r8]
 		mov r11b, BYTE[r9]
 
@@ -33,37 +33,37 @@ strCmp:
 		; si el char a = '\0' me fijo si b también está vacío, si sucede son iguales.
 		; si el char a = '\0' y b no es vacío entonces a < b
 		cmp r10b, 0
-		je .chequearVacios
+		je .check_ends
 
 		;como a no está vacío, me fijo si b está vacío. Si es vacio, entonces a > b.
 		cmp r11b, 0
-		je .mayor
+		je .higher
 		; fin caso base
 
 		; comparo el caracter de a con el de b. si a>b entonces -1. si a<b entonces 1.
 		cmp r10b, r11b 
-		jl .menor ;si a < b entonces devuelvo 1.
-		jg .mayor ;si a > b entonces devuelvo -1.
+		jl .smaller ;si a < b entonces devuelvo 1.
+		jg .higher ;si a > b entonces devuelvo -1.
 
 		;si son iguales, incremento los punteros.
 
 		add r8, 1 ;paso al siguiente char de a
 		add r9, 1 ;paso al siguiente char de b
-		jmp .ciclo
-	.menor: 
+		jmp .loop_chars
+	.smaller: 
 		mov eax, 1
-		jmp .fin
-	.mayor:
+		jmp .return
+	.higher:
 		mov eax, -1
-		jmp .fin
+		jmp .return
 		
-	.chequearVacios
+	.check_ends
 		cmp r11b, 0 ;a y b terminaron en el mismo lugar (son el mismo string)
-		je .iguales ; salto si son iguales
-		jmp .menor  ;si a terminó pero b no, entonces a < b.
-	.iguales
+		je .equals ; salto si son iguales
+		jmp .smaller  ;si a terminó pero b no, entonces a < b.
+	.equals
 		mov eax, 0
-	.fin: 
+	.return: 
 		pop rbp 
 		ret
 
