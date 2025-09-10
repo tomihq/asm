@@ -49,7 +49,7 @@ strLen:
 		cmp r9b, 0
 		je .fin
 		add eax, 1
-		add r8, 1
+		add r8, 1 ;me muevo al proximo byte.
 		jmp .ciclo 
 
 	.fin
