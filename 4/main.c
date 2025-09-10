@@ -21,5 +21,7 @@ int main() {
 	assert(strCmp(p, p2) == -1);
 	assert(strCmp(p2, p) == 1);
 	assert(strCmp(p2, p2) == 0);
+
+	
 	return 0;
 }

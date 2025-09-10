@@ -3,7 +3,8 @@ extern free
 extern fprintf
 
 section .data
-
+	null_str db "NULL", 0
+    null_len equ $ - null_str
 section .text
 
 global strCmp
@@ -72,12 +73,43 @@ strClone:
 	ret
 
 ; void strDelete(char* a)
+; char* a - RDI 
+; preguntar: ¿acá no tengo que preservar el valor de RDI? ¿qué registros son volatiles/no volatiles en 64?
 strDelete:
+	push rbp
+	mov rbp, rsp 
+	call free
+	pop rbp
 	ret
 
 ; void strPrint(char* a, FILE* pFile)
+; char* a - RDI 
+; FILE* pFile - RSI
+; escribir el string en pFile.
+; si el string es vacio se escribe NULL.
 strPrint:
-	ret
+	push rbp
+	mov rbp, rsp 
+
+	call strLen ;eax = longitud
+	mov rdi, rsi ;preparo el file como primer argumento 
+	
+	cmp eax, 0
+	je .writeNull
+	
+	;longitud mayor a 0 escribo en el file el string en en vez de NULL.
+	xor rax, rax
+	mov rsi, rdi
+	call fprintf
+	jmp .end
+
+	.writeNull:
+		xor rax, rax ;fprint es variádico
+		lea rsi, [rel null_str] ;puntero al string "NULL" en data.
+		call fprintf
+	.end: 
+		pop rbp
+		ret
 
 ; uint32_t strLen(char* a)
 ; Idea: puedo ir moviendo el puntero hacia adelante, si veo que la letra actual es '\0' al desreferenciar el puntero hago un jmp a fin. 
