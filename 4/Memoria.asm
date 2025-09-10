@@ -15,8 +15,57 @@ global strLen
 ; ** String **
 
 ; int32_t strCmp(char* a, char* b)
+; char* a -> rdi
+; char* b -> rsi 
+; int32_t -> eax
+; idea: tengo que comparar en orden lexicografico. como el char en realidad es un numero me basta con mover ambos punteros a la vez y comparar letra a letra.
 strCmp:
-	ret
+	push rbp
+	mov rbp, rsp
+	mov r8, rdi ;char 1
+	mov r9, rsi ;char 2
+	xor eax, eax 
+	.ciclo:
+		mov r10b, BYTE[r8]
+		mov r11b, BYTE[r9]
+
+		; caso base
+		; si el char a = '\0' me fijo si b también está vacío, si sucede son iguales.
+		; si el char a = '\0' y b no es vacío entonces a < b
+		cmp r10b, 0
+		je .chequearVacios
+
+		;como a no está vacío, me fijo si b está vacío. Si es vacio, entonces a > b.
+		cmp r11b, 0
+		je .mayor
+		; fin caso base
+
+		; comparo el caracter de a con el de b. si a>b entonces -1. si a<b entonces 1.
+		cmp r10b, r11b 
+		jl .menor ;si a < b entonces devuelvo 1.
+		jg .mayor ;si a > b entonces devuelvo -1.
+
+		;si son iguales, incremento los punteros.
+
+		add r8, 1 ;paso al siguiente char de a
+		add r9, 1 ;paso al siguiente char de b
+		jmp .ciclo
+	.menor: 
+		mov eax, 1
+		jmp .fin
+	.mayor:
+		mov eax, -1
+		jmp .fin
+		
+	.chequearVacios
+		cmp r11b, 0 ;a y b terminaron en el mismo lugar (son el mismo string)
+		je .iguales ; salto si son iguales
+		jmp .menor  ;si a terminó pero b no, entonces a < b.
+	.iguales
+		mov eax, 0
+	.fin: 
+		pop rbp 
+		ret
 
 ; char* strClone(char* a)
 strClone:
