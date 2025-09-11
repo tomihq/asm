@@ -94,9 +94,9 @@ strClone:
 
 	.copy:
 		cmp BYTE [r12], 0
-		je .end
 		mov al, BYTE [r12]
 		mov [rax], al
+		je .end
 		inc r12
 		inc rax
 		jmp .copy
@@ -159,7 +159,7 @@ strLen:
 	xor eax, eax ;inicializo acumulador en 0.
 
 	.ciclo: 
-		mov r9b, BYTE [r8] ;tomo el char de r8 y lo almaceno en r9b. Esto falla ¿por qué? gdb me devuelve void cuando printeo r9b como char. Pero si printeo r8 desreferenciando me da bien la 'h'
+		mov r9b, BYTE [r8] ;tomo el char de r8 y lo almaceno en r9b. 
 		;movzx r9, BYTE [r8]
 		cmp r9b, 0
 		je .fin
