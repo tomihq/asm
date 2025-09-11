@@ -48,8 +48,8 @@ strCmp:
 
 		;si son iguales, incremento los punteros.
 
-		add r8, 1 ;paso al siguiente char de a
-		add r9, 1 ;paso al siguiente char de b
+		inc r8 ;paso al siguiente char de a
+		inc r9 ;paso al siguiente char de b
 		jmp .loop_chars
 	.smaller: 
 		mov eax, 1
@@ -155,7 +155,7 @@ strPrint:
 strLen:
 	push rbp
 	mov rbp, rsp
-	mov r8, rdi; ;guardo rdi en r8 para no modificarle su valor. rdi es no-volatil, eso quiere decir que debo devolverlo como viene. 
+	mov r8, rdi; ;guardo rdi en r8 para no modificarle su valor. 
 	xor eax, eax ;inicializo acumulador en 0.
 
 	.ciclo: 
@@ -163,8 +163,8 @@ strLen:
 		;movzx r9, BYTE [r8]
 		cmp r9b, 0
 		je .fin
-		add eax, 1
-		add r8, 1 ;me muevo al proximo byte.
+		inc eax
+		inc r8 ;me muevo al proximo byte.
 		jmp .ciclo 
 
 	.fin:
