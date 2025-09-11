@@ -58,19 +58,51 @@ strCmp:
 		mov eax, -1
 		jmp .return
 		
-	.check_ends
+	.check_ends:
 		cmp r11b, 0 ;a y b terminaron en el mismo lugar (son el mismo string)
 		je .equals ; salto si son iguales
 		jmp .smaller  ;si a terminó pero b no, entonces a < b.
-	.equals
+	.equals:
 		mov eax, 0
 	.return: 
 		pop rbp 
 		ret
 
 ; char* strClone(char* a)
+; char* a - RDI
+; Idea: necesito llamar a malloc. Se que 1 byte es cada char. Tengo la función de strLen que me pone en eax la longitud del char a clonar.
+; 1. Llamo a strLen. No me hace falta hacer un backup de RDI porque es no volatil. No deberia de modificarlo. El resultado viene en eax. Lo guardo en otro registro que sea no volatil para tenerlo a mano siempre. 
+; 2. Llamo a malloc con esa cantidad, malloc me devuelve un puntero de 64 bits (mi nuevo cloned char* ) por rax.
+; 3. Recorro el char* a, y por cada letra que paso, la inyecto también en el cloned char. Muevo los punteros al mismo tiempo.
+; 4. La respuesta se devuelve por RAX automáticamente.
 strClone:
-	ret
+	push rbp
+	mov rbp, rsp
+	
+	sub rsp, 8        ; para volver a alinear a 16 bytes
+	mov r12, rdi; preservo el char original porque a malloc lo llamo con solo el size. 
+	call strLen; almacena en eax la longitud del str
+	add rsp, 8
+
+	mov r13d, eax; almaceno en r9 la longitud del str en no volatil porque no quiero perderlo
+	add r13d, 1 ;le agrego espacio para el backslash 0.
+
+	sub rsp, 8
+	mov rdi, r13
+	call malloc; devuelve por rax un puntero al nuevo char*
+	add rsp, 8
+
+	.copy:
+		cmp BYTE [r12], 0
+		je .end
+		mov al, [r12]
+		mov [rax], al
+		inc r12
+		inc rax
+		jmp .copy
+	.end:
+		pop rbp 
+		ret
 
 ; void strDelete(char* a)
 ; char* a - RDI 
@@ -133,8 +165,8 @@ strLen:
 		add r8, 1 ;me muevo al proximo byte.
 		jmp .ciclo 
 
-	.fin
-	pop rbp
-	ret
+	.fin:
+		pop rbp
+		ret
 
 
