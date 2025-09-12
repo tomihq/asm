@@ -22,6 +22,8 @@ int main() {
 	assert(strCmp(p2, p) == 1);
 	assert(strCmp(p2, p2) == 0);
 
-	assert(*strClone(s3) == 'h');
+	char* p4 = strClone(s3);
+	assert(*p4== 'h');
+	free(p4);
 	return 0;
 }

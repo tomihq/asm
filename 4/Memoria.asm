@@ -80,10 +80,14 @@ strClone:
 	mov rbp, rsp
 	push r12
 	push r13
+	push rbx
 	
 	;preservo el char original porque rdi lo necesito para el malloc, lo cual perdería el otro valor si no lo hago. 
 	mov r12, rdi
+
+	sub rsp, 8
 	call strLen ;almacena en eax la longitud del str
+	add rsp, 8
 
 	xor r13, r13; blanqueo r13. en este caso el movimiento que lo usará será de 32 bits por lo cual blanquea la parte alta. Pero lo hago así me acostumbro
 	mov r13d, eax; almaceno en r9 la longitud del str en no volatil porque no quiero perderlo
@@ -92,8 +96,8 @@ strClone:
 	mov rdi, r13
 	sub rsp, 8
 	call malloc; devuelve por rax un puntero al nuevo char*
-	mov r14, rax; guardo el puntero original para devolver
 	add rsp, 8
+	mov r14, rax; guardo el puntero original para devolver
 	.copy:
 		cmp BYTE [r12], 0
 		mov bl, BYTE [r12]
@@ -104,6 +108,7 @@ strClone:
 		jmp .copy
 	.end:
 		mov rax, r14
+		pop rbx
 		pop r13
 		pop r12
 		pop rbp 
