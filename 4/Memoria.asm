@@ -90,17 +90,20 @@ strClone:
 	inc r13d ;le agrego espacio para el backslash 0.
 
 	mov rdi, r13
+	sub rsp, 8
 	call malloc; devuelve por rax un puntero al nuevo char*
-
+	mov r14, rax; guardo el puntero original para devolver
+	add rsp, 8
 	.copy:
 		cmp BYTE [r12], 0
-		mov al, BYTE [r12]
-		mov [rax], al
+		mov bl, BYTE [r12]
+		mov [rax], bl
 		je .end
 		inc r12
 		inc rax
 		jmp .copy
 	.end:
+		mov rax, r14
 		pop r13
 		pop r12
 		pop rbp 
