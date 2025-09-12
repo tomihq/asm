@@ -108,12 +108,18 @@ alternate_sum_4_using_c_alternative:
 ; x8 -> [RSP + 16]
 alternate_sum_8:
 	;prologo
-  push rbp
+  push rbp ;acá los parámetros del RSP bajan 8 xq en rbp+8 está la dirección de retorno.
   mov rbp, rsp
   push r12
   push r13
   push r14
   push r15
+  ; blanqueo
+  xor r12, r12
+  xor r13, r13
+  xor r14, r14
+  xor r15, r15
+
   mov r12d, edx
   mov r13d, ecx 
   mov r14d, r8d
@@ -150,8 +156,8 @@ alternate_sum_8:
 
 ;void product_2_f(uint32_t* destination, uint32_t x1, float f1);
 ;registros: 
-; destination -> RDI //no volatil
-; x1 -> ESI //no volatil 
+; destination -> RDI //volatil
+; x1 -> ESI //volatil 
 ; f1 -> XMM0 //volatil
 ; IDEA: El resultado es un uint32_t*, tengo un uint32_t y un float. 
 ; Lo primero que tengo que hacer es que, como es una multiplicación, el numero resultado puede ser extremadamente grande. Lo cual, para garantizar que me entre, voy a usar double. Es decir, tanto el uint32_t y el float los voy a pasar a double.
