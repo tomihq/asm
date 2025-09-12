@@ -98,8 +98,8 @@ alternate_sum_4_using_c_alternative:
 
 ; uint32_t alternate_sum_8(uint32_t x1, uint32_t x2, uint32_t x3, uint32_t x4, uint32_t x5, uint32_t x6, uint32_t x7, uint32_t x8);
 ; registros y pila: 
-; x1 -> EDI (no volatil)
-; x2 -> ESI (no volatil)
+; x1 -> EDI (volatil)
+; x2 -> ESI (volatil)
 ; x3 -> EDX (volatil)
 ; x4 -> ECX (volatil)
 ; x5 -> R8D (volatil)
@@ -110,17 +110,14 @@ alternate_sum_8:
 	;prologo
   push rbp
   mov rbp, rsp
-  sub rsp, 16 ;reservo 16 bytes, mi param x7 va a 16 y x8 va a 24.
-  ; guardar parámetros volátiles
+  push r12
+  push r13
+  push r14
+  push r15
   mov r12d, edx
   mov r13d, ecx 
   mov r14d, r8d
   mov r15d, r9d
-  ; guardar x7 y x8 en stack
-  mov eax, [rbp+16]   
-  mov [rsp], eax
-  mov eax, [rbp+24]   
-  mov [rsp+4], eax
 
   ; ya esta EDI/ESI cargados de una.
   call restar_c
@@ -137,17 +134,19 @@ alternate_sum_8:
   mov esi, r15d
   call restar_c
   mov edi, eax
-  mov esi, [rsp]
+  mov esi, [rbp+16]
   call sumar_c
   mov edi, eax
-  mov esi, [rsp+4]
+  mov esi, [rbp+24]
   call restar_c
 
 	;epilogo
-  add rsp, 16          ; liberar espacio reservado
+  pop r15
+  pop r14 
+  pop r13
+  pop r12
   pop rbp
   ret
-
 
 ;void product_2_f(uint32_t* destination, uint32_t x1, float f1);
 ;registros: 
