@@ -67,23 +67,32 @@ es_indice_ordenado:
 		mov rbp, rsp 
 		push r12 ;desalineado. preservo r12 porque es no volatil y lo necesito siempre para el tamaño. no quiero perderlo
 		push r13 ;alineado. lo uso de acumulador
+		push r14 ;desalineado. lo voy a usar para obtener el item1 a comparar.
+		push r15; alineado lo voy a usar para obtener el item2 a comparar.
 		
 		;blanqueos
 		xor r12, r12 ;blanqueo un registro de 16 bits
 		xor rax, rax ;blanqueo la RTA
 		xor r13, r13 ;blanqueo el acumulador
+		xor r14, r14 ;blanqueo el registro que voy a usar para item1
+		xor r15, r15 ;blanqueo el registro que voy a usar para el item2
 
 		;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura. me va a servir para comparar en el ciclo con r13.
 		mov r12w, dx 
 		
-		cmp r13w, r12w
-		jp .success ;si el indice llegó al tamaño del array significa que todo funcó ok. salto a success.
+		.ciclo: 
+			cmp r13w, r12w
+			jp .success ;si el indice llegó al tamaño del array significa que todo funcó ok. salto a success.
+			
 
+		.fail: 
+			mov rax, FALSE
+			jmp .fin
 		.success:
 			mov rax, TRUE
-			jmp .fin 
-		
 		.fin: 
+			pop r15	
+			pop r14
 			pop r13
 			pop r12
 			pop rbp
