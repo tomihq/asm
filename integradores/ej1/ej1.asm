@@ -61,36 +61,62 @@ global es_indice_ordenado
 	; RSI = uint16_t*    indice
 	; RDX = uint16_t     tamanio -> la parte que me interesa esta en dx (16 bits)
 	; RCX = comparador_t comparador
-	; la respuesta por default es true, es decir, devuelvo un por rax un bool
+	; la respuesta por default es true, es decir, devuelvo un por RAX un bool. BLANQUEO rax antes de devolver
 es_indice_ordenado:
 		push rbp 
 		mov rbp, rsp 
 		push r12 ;desalineado. preservo r12 porque es no volatil y lo necesito siempre para el tamaño. no quiero perderlo
 		push r13 ;alineado. lo uso de acumulador
-		push r14 ;desalineado. lo voy a usar para obtener el item1 a comparar.
-		push r15; alineado lo voy a usar para obtener el item2 a comparar.
+		push r14 ;desalineado. lo voy a usar para guardar la lista de indice.
+		push r15 ;alineado lo voy a usar para obtener guardar el inventario.
+		push rbx ;desalineado. lo uso para almacenar la funcion de comparación.
 		
 		;blanqueos
 		xor r12, r12 ;blanqueo un registro de 16 bits
 		xor rax, rax ;blanqueo la RTA
 		xor r13, r13 ;blanqueo el acumulador
-		xor r14, r14 ;blanqueo el registro que voy a usar para item1
-		xor r15, r15 ;blanqueo el registro que voy a usar para el item2
+		xor r14, r14 ;blanqueo el registro que voy a usar para la lista de indices
+		xor r15, r15 ;blanqueo el registro que voy a usar para el inventario
+		xor rbx, rbx ;blanqueo el registro que voy a usar para almacenar la función de comparación
 
-		;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura. me va a servir para comparar en el ciclo con r13.
-		mov r12w, dx 
+		;tamanio/inventario/indice/comparador
+		mov r12w, dx ;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura. me va a servir para comparar en el ciclo con r13.
+		mov r14, rsi ;son 64 bits la lista de indices así que esta ok
+		mov r15, rdi ;son 64 bits el inventario asi que está ok
+		mov rbx, rcx ;almaceno la función de comparación
+
 		
 		.ciclo: 
 			cmp r13w, r12w
 			jp .success ;si el indice llegó al tamaño del array significa que todo funcó ok. salto a success.
+			; agarro indice r13w e indice r13w+1, los guardo en dos registros.
+			; ese indice es el que voy usar para ingresar al inventario. 
+			xor r8, r8
+			mov r8w, WORD [r14 + r13 * 2] ;tomo el indice i (valor)
+			xor r10, r10
+			mov r10, [r15 + r8w * ITEM_SIZE] ;tomo el puntero al elemento i-esimo del inventario 
+			mov rdi, r10 ;preparo el primer elem para comparar.
+			inc r13 
+			mov r8w, WORD [r14 + r13 * 2] ; tomo el indice i+1 (valor)
+			mov r10, [r15 + r8w * ITEM_SIZE]
+			mov rsi, r10; preparo el segundo elem para comparar
 			
+			sub rsp, 4
+			call rbx //la respuesta está en rax. es un booleano (1/0)
+			add rsp, 4
 
+			cmp rax, FALSE 
+			je .fail ; si es FALSE (0), entonces falla porque la comparación no es esperada. 
+			inc r13 
+			jmp .ciclo
+			
 		.fail: 
 			mov rax, FALSE
 			jmp .fin
 		.success:
 			mov rax, TRUE
 		.fin: 
+			pop rbx
 			pop r15	
 			pop r14
 			pop r13
