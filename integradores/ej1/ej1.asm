@@ -87,19 +87,23 @@ es_indice_ordenado:
 
 		
 		.ciclo: 
-			cmp r13w, r12w
+			movzx r9, r12w      ; r9 = tamanio  (64 bits)
+			movzx r10, r13w     ; r10 = i      (64 bits)
+			lea r11, [r10 + 1]  ; r11 = i + 1
+			cmp r11, r9
 			jp .success ;si el indice llegó al tamaño del array significa que todo funcó ok. salto a success.
 			; agarro indice r13w e indice r13w+1, los guardo en dos registros.
 			; ese indice es el que voy usar para ingresar al inventario. 
-			xor r8, r8
-			movzx r8, WORD [r14 + r13 * 2] ;tomo el indice i (valor)
-			mov r10, [r15 + r8 * 8] ;tomo el puntero al elemento i-esimo del inventario 
-			mov rdi, r10 ;preparo el primer elem para comparar.
-			inc r13 
+
+			;cargar inventario[indice[i]]
+			movzx r8, WORD [r14 + r13*2]   ; r8 = indice[i] extendido a 64 bits
+			mov rdx, [r15 + r8*8]          ; rdx = inventario[indice[i]]  (item_t*)
+			mov rdi, rdx 
 			
-			movzx r8, WORD [r14 + r13 * 2] ; tomo el indice i+1 (valor)
-			mov r10, [r15 + r8 * 8]
-			mov rsi, r10; preparo el segundo elem para comparar
+			 ; --- cargar inventario[indice[i+1]] ---
+			movzx r8, WORD [r14 + r11*2]   ; r8 = indice[i+1]
+			mov rdx, [r15 + r8*8]          ; rdx = inventario[indice[i+1]] (item_t*)
+			mov rsi, rdx                   ; segundo arg para el comparador
 			
 			sub rsp, 8
 			call rbx ; la respuesta está en rax. es un booleano (1/0)
