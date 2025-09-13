@@ -132,44 +132,56 @@ global ejercicio4
 ejercicio4:
 	push rbp 
 	mov rbp, rsp 
+	; preservo no-volatiles
 	push r12
 	push r13
 	push r14
 	push r15
 	push rbx 
+
+	; almaceno volátiles
 	mov r12, rdi
 	mov r13, rsi
 	mov r14, rdx
-
+	;blanqueo rdi porque voy a usar eax dentro de él
 	xor rdi, rdi
 	mov eax, esi
+	;calculo el tamaño del array
 	imul eax, UINT32_SIZE 
+	;almaceno el tamaño del array en edi para llamar al malloc
 	mov edi, eax
 
+	;alineo el rsp
 	sub rsp, 8
 	call malloc
+	;desalineo el rsp
 	add rsp, 8 
+	; almaceno en r15 el puntero al nuevo array
 	mov r15, rax
-	
+
+	; blanqueo el contador (para ir poniendo los numeros)
 	xor rbx, rbx
 	.loop:
-	
+	; si rbx es igual al tamaño del array original, entonces ya terminé
 	cmp rbx, r13
 	je .end
 
 	mov r8, [r12+rbx*POINTER_SIZE] ;ok. obtiene la direccion de memoria donde se encuentra el i-esimo elemento. El POINTER_SIZE es el tamaño del elemento que almacena.
 	mov r9, [r8] ;agarra el valor. 
-	imul r9d, r14d ;multiplico
+	imul r9d, r14d ;multiplico por la constante
 	mov [r15+rbx*UINT32_SIZE], r9d ;almacena el valor en el nuevo array
 	
 	mov rdi, r8 ;toma el puntero.
+	; alineo
 	sub rsp,8 
 	call free ;libera el puntero del array original
+	; desalineo
 	add rsp, 8
 
 	mov r8, 0 ;blanqueo el valor del puntero a NULL
 	mov [r12 + rbx * POINTER_SIZE], r8 ;paso el valor de r8 en NULL al array original
 
+	; aumento el contador para que me falten cada vez menos elementos que agregar.
 	inc rbx
 	jmp .loop
 
