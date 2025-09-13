@@ -92,18 +92,18 @@ es_indice_ordenado:
 			; agarro indice r13w e indice r13w+1, los guardo en dos registros.
 			; ese indice es el que voy usar para ingresar al inventario. 
 			xor r8, r8
-			mov r8w, WORD [r14 + r13 * 2] ;tomo el indice i (valor)
-			xor r10, r10
-			mov r10, [r15 + r8w * ITEM_SIZE] ;tomo el puntero al elemento i-esimo del inventario 
+			movzx r8, WORD [r14 + r13 * 2] ;tomo el indice i (valor)
+			mov r10, [r15 + r8 * 8] ;tomo el puntero al elemento i-esimo del inventario 
 			mov rdi, r10 ;preparo el primer elem para comparar.
 			inc r13 
-			mov r8w, WORD [r14 + r13 * 2] ; tomo el indice i+1 (valor)
-			mov r10, [r15 + r8w * ITEM_SIZE]
+			
+			movzx r8, WORD [r14 + r13 * 2] ; tomo el indice i+1 (valor)
+			mov r10, [r15 + r8 * 8]
 			mov rsi, r10; preparo el segundo elem para comparar
 			
-			sub rsp, 4
-			call rbx //la respuesta está en rax. es un booleano (1/0)
-			add rsp, 4
+			sub rsp, 8
+			call rbx ; la respuesta está en rax. es un booleano (1/0)
+			add rsp, 8
 
 			cmp rax, FALSE 
 			je .fail ; si es FALSE (0), entonces falla porque la comparación no es esperada. 
