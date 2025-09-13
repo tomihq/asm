@@ -65,11 +65,12 @@ es_indice_ordenado:
 		push rbp 
 		mov rbp, rsp 
 		push r12 ;desalineado. preservo r12 porque es no volatil y lo necesito siempre para el tamaño. no quiero perderlo
+		push r13 ;alineado. lo uso de acumulador
 		xor r12, r12 ;blanqueo un registro de 16 bits
-		mov r12w, ax ;muevo el tamaño de 16 bits limpio a r12 para no tener basura.
+		mov r12w, ax ;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura.
 		
-
-		pop r12w
+		pop r13
+		pop r12
 		pop rbp
 		ret
 
