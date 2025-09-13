@@ -33,6 +33,8 @@ int main() {
 	cantidad_total_de_elementos(lista);
 
     free(nodo);
+    free(nodo_2);
     free(lista);
+
 	return 0;
 }
