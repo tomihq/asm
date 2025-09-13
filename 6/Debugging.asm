@@ -70,7 +70,18 @@ ejercicio2:
 
 
 global ejercicio3
+; uint32_t* arr -> RDI
+; uint32_t size -> RSI
+; uint32_t (*fun_ej_3)(uint32_t a, uint32_t b) -> RDX
+; esto último tiene un puntero, es decir, si lo desreferencio 
+; le tengo que mandar los dos parámetros, al llamarla
+; me da el resultado por EAX. 
+; IDEA: Blanqueo rax antes de todo. 
+; 1. si cmp rsi, 0 salto a devolver 64.
+; 2. si cmp rsi, 1 ent, le cargo los parámetros (0, arr[0]) y hago call funcion
+; 3. si cmp rsi NO es 1, ent hago llamada recursiva disminuyendo 1 y loopeo
 ejercicio3:
+	xor rax, rax
 	cmp rsi, 0
 	je .vacio
 	
@@ -79,13 +90,15 @@ ejercicio3:
 	mov r9, 0 ; i
 
 	.loop:
+	cmp rsi, 1
+	je .uno
 	mov rdi, r8
-	mov rsi, [rcx + r9*4]
+	mov rsi, [rcx + r9*4] ;almacena en rsi el elemento en el indice r9*4 en el array.
 
 	call rdx
 
-	add r8, rax
-	mov rax, r8
+	add r8d, eax
+	mov eax, r8d
 
 	inc r9
 	cmp r9, rsi
@@ -94,12 +107,23 @@ ejercicio3:
 	jmp .loop
 
 	.vacio:
-	mov rax, 64
+	mov eax, 64
 
+	.uno 
+		mov rdi, 0
+		mov rsi, [rcx]
+		call rdx 
+		jmp .end 
 	.end:
 	ret
 
 global ejercicio4
+;IDEA: Tengo que devolver un puntero a un nuevo array, del mismo largo que el array original de uint32_t** pero con los elementos multiplicados por la constante C: 
+; 1. necesito hacer un malloc usando size. Eso me da un puntero a una estructura que va a tener el mismo tamaño que size en otro lugar.
+; 2. tomo el elemento que esta en el array, lo almaceno en un registro, lo multiplico por c y lo almaceno en mi nuevo array. 
+; 3. Elimino el puntero a ese elemento en el array viejo usando free. 
+; 4. Seteo el valor de esa posición a NULL.
+
 ejercicio4:
 	mov r12, rdi
 	mov r13, rsi
