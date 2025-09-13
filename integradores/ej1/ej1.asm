@@ -14,7 +14,7 @@ TRUE  EQU 1
 ; Funciones a implementar:
 ;   - es_indice_ordenado
 global EJERCICIO_1A_HECHO
-EJERCICIO_1A_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ; Marca el ejercicio 1B como hecho (`true`) o pendiente (`false`).
 ;
@@ -25,10 +25,10 @@ EJERCICIO_1B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
-ITEM_NOMBRE EQU ??
-ITEM_FUERZA EQU ??
-ITEM_DURABILIDAD EQU ??
-ITEM_SIZE EQU ??
+ITEM_NOMBRE EQU 0
+ITEM_FUERZA EQU 20
+ITEM_DURABILIDAD EQU 24
+ITEM_SIZE EQU 28
 
 ;; La funcion debe verificar si una vista del inventario está correctamente 
 ;; ordenada de acuerdo a un criterio (comparador)
@@ -54,15 +54,23 @@ ITEM_SIZE EQU ??
 ;;   de verificar que el orden sea estable.
 
 global es_indice_ordenado
-es_indice_ordenado:
-	; Te recomendamos llenar una tablita acá con cada parámetro y su
+; Te recomendamos llenar una tablita acá con cada parámetro y su
 	; ubicación según la convención de llamada. Prestá atención a qué
 	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
-	;
-	; r/m64 = item_t**     inventario
-	; r/m64 = uint16_t*    indice
-	; r/m16 = uint16_t     tamanio
-	; r/m64 = comparador_t comparador
+	; RDI = item_t**     inventario
+	; RSI = uint16_t*    indice
+	; RDX = uint16_t     tamanio
+	; RCX = comparador_t comparador
+es_indice_ordenado:
+		push rbp 
+		mov rbp, rsp 
+		push r12w ;desalineado. preservo r12 porque es no volatil y lo necesito siempre para el tamaño. no quiero perderlo
+		xor r12w, r12w ;blanqueo un registro de 16 bits
+		mov r12w, ax ;muevo el tamaño de 16 bits limpio a r12 para no tener basura.
+
+
+		pop r12w
+		pop rbp
 		ret
 
 ;; Dado un inventario y una vista, crear un nuevo inventario que mantenga el
