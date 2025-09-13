@@ -59,7 +59,7 @@ global es_indice_ordenado
 	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
 	; RDI = item_t**     inventario
 	; RSI = uint16_t*    indice
-	; RDX = uint16_t     tamanio
+	; RDX = uint16_t     tamanio -> la parte que me interesa esta en dx (16 bits)
 	; RCX = comparador_t comparador
 	; la respuesta por default es true, es decir, devuelvo un por rax un bool
 es_indice_ordenado:
@@ -67,11 +67,19 @@ es_indice_ordenado:
 		mov rbp, rsp 
 		push r12 ;desalineado. preservo r12 porque es no volatil y lo necesito siempre para el tamaño. no quiero perderlo
 		push r13 ;alineado. lo uso de acumulador
+		
+		;blanqueos
 		xor r12, r12 ;blanqueo un registro de 16 bits
-		mov r12w, ax ;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura.
 		xor rax, rax ;blanqueo la RTA
+		xor r13, r13 ;blanqueo el acumulador
 
-		success:
+		;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura. me va a servir para comparar en el ciclo con r13.
+		mov r12w, dx 
+		
+		cmp r13w, r12w
+		jp .success ;si el indice llegó al tamaño del array significa que todo funcó ok. salto a success.
+
+		.success:
 			mov rax, TRUE
 			jmp .fin 
 		
