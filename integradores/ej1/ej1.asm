@@ -61,6 +61,7 @@ global es_indice_ordenado
 	; RSI = uint16_t*    indice
 	; RDX = uint16_t     tamanio
 	; RCX = comparador_t comparador
+	; la respuesta por default es true, es decir, devuelvo un por rax un bool
 es_indice_ordenado:
 		push rbp 
 		mov rbp, rsp 
@@ -68,10 +69,16 @@ es_indice_ordenado:
 		push r13 ;alineado. lo uso de acumulador
 		xor r12, r12 ;blanqueo un registro de 16 bits
 		mov r12w, ax ;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura.
+		xor rax, rax ;blanqueo la RTA
+
+		success:
+			mov rax, TRUE
+			jmp .fin 
 		
-		pop r13
-		pop r12
-		pop rbp
+		.fin: 
+			pop r13
+			pop r12
+			pop rbp
 		ret
 
 ;; Dado un inventario y una vista, crear un nuevo inventario que mantenga el
