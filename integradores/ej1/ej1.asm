@@ -65,7 +65,7 @@ es_indice_ordenado:
 		push rbp 
 		mov rbp, rsp 
 		push r12 ;desalineado. preservo r12 porque es no volatil y lo necesito siempre para el tamaño. no quiero perderlo
-		xor r12w, r12w ;blanqueo un registro de 16 bits
+		xor r12, r12 ;blanqueo un registro de 16 bits
 		mov r12w, ax ;muevo el tamaño de 16 bits limpio a r12 para no tener basura.
 		
 
