@@ -8,7 +8,15 @@
 #include "Debugging.h"
 
 int main(int argc, char* argv[]) {
-    item_t* un_item = malloc(sizeof(item_t));
-    ejercicio2(un_item, 1234, 3, "poncho");
-    free(un_item);
+
+	uint32_t* array_inicial[1];
+
+	uint32_t* punteroUint = malloc(sizeof(uint32_t));
+	*punteroUint = 10;
+	array_inicial[0] = punteroUint;
+	
+	uint32_t array_res[] = {80};
+	uint32_t* array = ejercicio4(array_inicial, 1, 8);
+	free(array);
+	
 }

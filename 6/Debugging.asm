@@ -15,8 +15,8 @@ ITEM_OFFSET_NOMBRE EQU 0
 ITEM_OFFSET_ID EQU 12
 ITEM_OFFSET_CANTIDAD EQU 16
 
-POINTER_SIZE EQU 4
-UINT32_SIZE EQU 8
+POINTER_SIZE EQU 8
+UINT32_SIZE EQU 4
 
 ; Marcar el ejercicio como hecho (`true`) o pendiente (`false`).
 
@@ -30,7 +30,7 @@ global EJERCICIO_3_HECHO
 EJERCICIO_3_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
 
 global EJERCICIO_4_HECHO
-EJERCICIO_4_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_4_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 global ejercicio1
 ejercicio1:
@@ -109,7 +109,7 @@ ejercicio3:
 	.vacio:
 	mov eax, 64
 
-	.uno 
+	.uno:
 		mov rdi, 0
 		mov rsi, [rcx]
 		call rdx 
@@ -120,21 +120,35 @@ ejercicio3:
 global ejercicio4
 ;IDEA: Tengo que devolver un puntero a un nuevo array, del mismo largo que el array original de uint32_t** pero con los elementos multiplicados por la constante C: 
 ; 1. necesito hacer un malloc usando size. Eso me da un puntero a una estructura que va a tener el mismo tamaño que size en otro lugar.
-; 2. tomo el elemento que esta en el array, lo almaceno en un registro, lo multiplico por c y lo almaceno en mi nuevo array. 
+	; Cargo en EDI el valor de ESI.
+	; Llamo a malloc. Devuelve el resultado por RAX. 
+; 2. Tomo el elemento que esta en el array, lo almaceno en un registro, lo multiplico por c y lo almaceno en mi nuevo array. 
 ; 3. Elimino el puntero a ese elemento en el array viejo usando free. 
 ; 4. Seteo el valor de esa posición a NULL.
-
+; uint32_t** array - RDI
+; uint32_t size - ESI 
+; uint32_t constante - EDX
+; El resultado lo devuelvo por RAX (puntero de 64 bits).
 ejercicio4:
+	push rbp 
+	mov rbp, rsp 
+	push r12
+	push r13
+	push r14
+	push r15
+	push rbx 
 	mov r12, rdi
 	mov r13, rsi
 	mov r14, rdx
 
 	xor rdi, rdi
-	mov eax, UINT32_SIZE
-	mul esi
+	mov eax, esi
+	imul eax, UINT32_SIZE 
 	mov edi, eax
 
+	sub rsp, 8
 	call malloc
+	add rsp, 8 
 	mov r15, rax
 	
 	xor rbx, rbx
@@ -143,18 +157,28 @@ ejercicio4:
 	cmp rbx, r13
 	je .end
 
-	mov r8, [r12+rbx*POINTER_SIZE]
-	mov r9d, [r8]
-	mov rax, r14
-	mul r9d
-	mov [r15+rbx*UINT32_SIZE], eax
+	mov r8, [r12+rbx*POINTER_SIZE] ;ok. obtiene la direccion de memoria donde se encuentra el i-esimo elemento. El POINTER_SIZE es el tamaño del elemento que almacena.
+	mov r9, [r8] ;agarra el valor. 
+	imul r9d, r14d ;multiplico
+	mov [r15+rbx*UINT32_SIZE], r9d ;almacena el valor en el nuevo array
 	
-	mov rsi, r8 
-	call free
+	mov rdi, r8 ;toma el puntero.
+	sub rsp,8 
+	call free ;libera el puntero del array original
+	add rsp, 8
+
+	mov r8, 0 ;blanqueo el valor del puntero a NULL
+	mov [r12 + rbx * POINTER_SIZE], r8 ;paso el valor de r8 en NULL al array original
 
 	inc rbx
 	jmp .loop
 
 	.end:
-	mov rax, r15
+	mov eax, r15d
+	pop rbx
+	pop r15
+	pop r14
+	pop r13 
+	pop r12
+	pop rbp
 	ret
