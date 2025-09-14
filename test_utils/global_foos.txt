@@ -1,0 +1,5 @@
+global_foo_label malloc
+global_foo_label EJERCICIO_1A_HECHO
+global_foo_label EJERCICIO_1B_HECHO
+global_foo_label es_indice_ordenado
+global_foo_label indice_a_inventario

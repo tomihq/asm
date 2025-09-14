@@ -21,7 +21,7 @@ EJERCICIO_1A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 ; Funciones a implementar:
 ;   - indice_a_inventario
 global EJERCICIO_1B_HECHO
-EJERCICIO_1B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1B_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
@@ -142,12 +142,56 @@ es_indice_ordenado:
 ;;   ítems**
 
 global indice_a_inventario
+; item_t** inventario: RDI 
+; uint16_t* indice: RSI
+; uint16_t tamanio: RDX
+; voy a hacer un call a malloc así que tengo que preservar los registros porque necesito el inventario después de haber creado el nuevo. Los índices y el tamaño también los necesito así que los preservo.
+; el resultado lo devuelvo por RAX.
 indice_a_inventario:
-	; Te recomendamos llenar una tablita acá con cada parámetro y su
-	; ubicación según la convención de llamada. Prestá atención a qué
-	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
-	;
-	; r/m64 = item_t**  inventario
-	; r/m64 = uint16_t* indice
-	; r/m16 = uint16_t  tamanio
-	ret
+	push rbp 
+	mov rbp, rsp 
+	push r12 ;inventario viejo
+	push r13 ;indices
+	push r14 ;ttamanio
+
+	xor rax, rax; blanqueo rax por si las dudas
+	xor r14, r14;
+
+	mov r12, rdi ;64 bits
+	mov r13, rsi ;64 bits
+	mov r14w, dx;16 bits
+
+	; preparar el tamaño para el malloc
+	xor r8, r8
+	mov r8, r14 ;copio el tamanio a r8
+	imul r8, ITEM_SIZE ;multiplico el tamaño por cada item para el malloc
+
+	; preparo params para el malloc
+	mov rdi, r8
+	sub rsp, 8
+	call malloc ;me devuelve un puntero al nuevo inventario en rax.
+	add rsp, 8
+	
+	; lo uso como indice de ciclo
+	xor r8, r8
+
+	.ciclo: 
+		cmp r8, r14
+		je .fin
+		
+		xor r9, r9 ; lo uso para almacenar el indice del item. es un puntero a items de 16 bits.
+		xor r10, r10
+		movzx r9, WORD [r13 + r8 * 2] ;acá ya tengo el indice al item.
+		mov r10, QWORD [r12 + r9 * 8]; acá ya tengo el puntero del ítem en el inventario.
+		mov [rax + r8 * 8], r10 ;acá guardé el puntero al item.
+
+		inc r8
+		jmp .ciclo
+
+
+	.fin:
+		pop r12
+		pop r13	
+		pop r14 
+		pop rbp
+		ret

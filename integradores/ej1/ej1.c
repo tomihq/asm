@@ -42,10 +42,7 @@ bool es_indice_ordenado(item_t** inventario, uint16_t* indice, uint16_t tamanio,
 item_t** indice_a_inventario(item_t** inventario, uint16_t* indice, uint16_t tamanio) {
 	item_t** resultado = malloc(sizeof(item_t) * tamanio); //voy a guardar tamanio elementos que pesan item_t
 	for(int i = 0; i<tamanio; i++){
-		item_t* item = inventario[indice[i]]; //agarro la direccion de memoria del puntero al item.
-		item_t* copiaItem = malloc(sizeof(item_t)); //reservo memoria para el nuevo puntero
-		copiaItem = item; //copio el puntero de item a copiaItem
-		resultado[i] = copiaItem; 
+		resultado[i] = inventario[indice[i]];
 	}
 	return resultado;
 }
