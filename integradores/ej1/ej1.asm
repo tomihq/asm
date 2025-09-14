@@ -81,15 +81,16 @@ es_indice_ordenado:
 		.ciclo: 
 			movzx r9, r12w      ; r9 = tamanio  (64 bits)
 			movzx r10, r13w     ; r10 = i      (64 bits)
-			lea r11, [r10 + 1]  ; r11 = i + 1
+			mov r11, r10
+			add r11, 1
 			cmp r11, r9
 			jp .success ;si el indice llegó al tamaño del array significa que todo funcó ok. salto a success.
 			; agarro indice r13w e indice r13w+1, los guardo en dos registros.
 			; ese indice es el que voy usar para ingresar al inventario. 
 
 			;cargar inventario[indice[i]]. r 
-			movzx r8, WORD [r14 + r13*2]   ; r8 = indice[i] extendido a 64 bits
-			mov rdx, [r15 + r8*8]          ; rdx = inventario[indice[i]]  (item_t*)
+			movzx r8, WORD [r14 + r13*2]   ; r8 = indice[i] extendido a 64 bits. r14: lista de indices, r13: indice*2 offset (cada elem es de 16 bits)
+			mov rdx, [r15 + r8*8]          ; rdx = inventario[indice[i]]  (item_t*). r15 = inventario, r8 = es el índice (ej.: i=3), *8: tamaño de cada puntero
 			mov rdi, rdx 
 			
 			 ; --- cargar inventario[indice[i+1]] ---
