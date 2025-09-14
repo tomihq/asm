@@ -34,14 +34,14 @@ bool EJERCICIO_2C_HECHO = false;
 void optimizar(mapa_t mapa, attackunit_t* compartida, uint32_t (*fun_hash)(attackunit_t*)) {
     for(int i = 0; i<255; i++){
         for(int j = 0; j<255; j++){
-            attackunit_t* unit_mapa = mapa[i][j];
-            
-            if(unit_mapa != NULL){
-                if(fun_hash(compartida) == fun_hash(unit_mapa) && unit_mapa != compartida){ //no tengo que incrementar si la que me pasan ya esta en el mapa. Error de enunciado.
+            attackunit_t* unit_mapa = mapa[i][j]; //*(mapa + i * 8) te parás en el puntero. 
+
+            if(unit_mapa == NULL) continue;
+            if(unit_mapa == compartida) continue;
+            if(fun_hash(unit_mapa) == fun_hash(compartida) ){ //no tengo que incrementar si la que me pasan ya esta en el mapa. Error de enunciado.
                                 mapa[i][j] = compartida;
                                 compartida -> references += 1;
                 }
-            }
            
         }
     }
