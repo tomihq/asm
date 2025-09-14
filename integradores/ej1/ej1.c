@@ -28,7 +28,9 @@ bool es_indice_ordenado(item_t** inventario, uint16_t* indice, uint16_t tamanio,
 	item_t* item2 = NULL; 
 	for(int i=0; i+1<tamanio; i++){
 		item1 = inventario[indice[i]];
+		//item1 = *(inventario + (*(indice + i))); // *(indice + i * 2) -> cada indice, llamemosle indice ->  *(inventario + indice * 8) 8 es el tamaño de los punteros. En C no hace falta xq los tamaños de los items te lo resuelve el compilador
 		item2 = inventario[indice[i+1]];
+		//item2 = *(inventario + (*(indice + (i+1)))) //*(indice + (i+1) * 2) -> indice (i+1), llamemosle indice 2 -> *(inventario + indice2 *8) 8 es el tamaño de los punteros. En C no hace falta xq los tamaños de los items te lo resuelve el compilador
 		if(comparador(item1, item2) == false) return false; 
 	}
 	return true;
