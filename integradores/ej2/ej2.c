@@ -8,9 +8,9 @@
  * Marca el ejercicio 1A como hecho (`true`) o pendiente (`false`).
  *
  * Funciones a implementar:
- *   - es_indice_ordenado
+ *   - optimizar
  */
-bool EJERCICIO_2A_HECHO = false;
+bool EJERCICIO_2A_HECHO = true;
 
 /**
  * Marca el ejercicio 1B como hecho (`true`) o pendiente (`false`).
@@ -32,6 +32,19 @@ bool EJERCICIO_2C_HECHO = false;
  * OPCIONAL: implementar en C
  */
 void optimizar(mapa_t mapa, attackunit_t* compartida, uint32_t (*fun_hash)(attackunit_t*)) {
+    for(int i = 0; i<255; i++){
+        for(int j = 0; j<255; j++){
+            attackunit_t* unit_mapa = mapa[i][j];
+            
+            if(unit_mapa != NULL){
+                if(fun_hash(compartida) == fun_hash(unit_mapa) && unit_mapa != compartida){ //no tengo que incrementar si la que me pasan ya esta en el mapa. Error de enunciado.
+                                mapa[i][j] = compartida;
+                                compartida -> references += 1;
+                }
+            }
+           
+        }
+    }
 }
 
 /**
