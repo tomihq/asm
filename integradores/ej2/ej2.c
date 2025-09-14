@@ -38,9 +38,14 @@ void optimizar(mapa_t mapa, attackunit_t* compartida, uint32_t (*fun_hash)(attac
 
             if(unit_mapa == NULL) continue;
             if(unit_mapa == compartida) continue;
-            if(fun_hash(unit_mapa) == fun_hash(compartida) ){ //no tengo que incrementar si la que me pasan ya esta en el mapa. Error de enunciado.
+            if(fun_hash(unit_mapa) == fun_hash(compartida)){ //no tengo que incrementar si la que me pasan ya esta en el mapa. Error de enunciado.
                                 mapa[i][j] = compartida;
                                 compartida -> references += 1;
+                                unit_mapa -> references -= 1; 
+                                if(unit_mapa -> references == 0){
+                                    free(unit_mapa);
+                                }
+
                 }
            
         }

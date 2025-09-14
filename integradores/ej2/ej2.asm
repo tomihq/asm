@@ -1,4 +1,5 @@
 extern malloc
+extern free
 
 section .rodata
 ; Acá se pueden poner todas las máscaras y datos que necesiten para el ejercicio
@@ -65,7 +66,7 @@ optimizar:
 	.ciclo:
 		cmp r15, MAPA_SIZE
 		jae .fin
-		mov r8, [r12 + r15 * 8]
+		mov r8, [r12 + r15 * 8] ; mapa[i][j]
 
 		; caso null
 		cmp r8, 0 ;si es null hago continue
@@ -88,7 +89,6 @@ optimizar:
 
 		;preparo fun_hash(unit_mapa)
 		mov rdi, r8
-		
 		push r8; preservo unit_mapa
 		call r14 ;obtengo el resultado en rax
 		pop r8; obtengo unit_mapa
@@ -101,6 +101,20 @@ optimizar:
 		mov [r12 + r15 * 8], r13 ;muevo a mapa[i][j] el puntero a compartida.
 		; compartida -> references += 1
 		inc BYTE [r13 + ATTACKUNIT_REFERENCES]
+
+		;decremento las references de unit_mapa
+		dec BYTE [r8 + ATTACKUNIT_REFERENCES]
+		mov al, BYTE[r8 + ATTACKUNIT_REFERENCES]
+
+		;si no hay mas referencias a esa referencia, lo borrás de memoria
+		cmp al, 0
+		jne .incloop
+
+		sub rsp, 8
+		mov rdi, r8
+		call free
+		add rsp, 8
+
 
 		.incloop:
 			inc r15
