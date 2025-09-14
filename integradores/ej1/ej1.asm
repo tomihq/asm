@@ -71,14 +71,6 @@ es_indice_ordenado:
 		push r15 ;alineado lo voy a usar para obtener guardar el inventario.
 		push rbx ;desalineado. lo uso para almacenar la funcion de comparación.
 		
-		;blanqueos
-		xor r12, r12 ;blanqueo un registro de 16 bits
-		xor rax, rax ;blanqueo la RTA
-		xor r13, r13 ;blanqueo el acumulador
-		xor r14, r14 ;blanqueo el registro que voy a usar para la lista de indices
-		xor r15, r15 ;blanqueo el registro que voy a usar para el inventario
-		xor rbx, rbx ;blanqueo el registro que voy a usar para almacenar la función de comparación
-
 		;tamanio/inventario/indice/comparador
 		mov r12w, dx ;muevo el tamaño del array inventario/indice de 16 bits limpio a r12 para no tener basura. me va a servir para comparar en el ciclo con r13.
 		mov r14, rsi ;son 64 bits la lista de indices así que esta ok
@@ -95,7 +87,7 @@ es_indice_ordenado:
 			; agarro indice r13w e indice r13w+1, los guardo en dos registros.
 			; ese indice es el que voy usar para ingresar al inventario. 
 
-			;cargar inventario[indice[i]]
+			;cargar inventario[indice[i]]. r 
 			movzx r8, WORD [r14 + r13*2]   ; r8 = indice[i] extendido a 64 bits
 			mov rdx, [r15 + r8*8]          ; rdx = inventario[indice[i]]  (item_t*)
 			mov rdi, rdx 
