@@ -91,18 +91,18 @@ hay_accion_que_toque:
 
 	.ciclo:
 		;accion == NULL 
-		cmp r12, 0
+		cmp r12, BYTE 0 ;;el BYTE es opcional, pero lo pongo para mayor legibilidad inmediata.
 		je .fin 
 
-		mov r8, [r12 + accion.destino]  ;guardo accion -> destino en r8. Necesito el struct
+		mov r8, QWORD[r12 + accion.destino]  ;guardo accion -> destino en r8. Necesito el struct
 		lea rdi, [r8 + carta.nombre] ; carta -> nombre. Como es un array de chars necesito la direccion en donde empieza
 		mov rsi, r13 ; char* nombre
 
 		call strcmp ;almacena en rax si es 0 o 1. Es un byte
-		cmp al, 0
+		cmp al, BYTE 0
 		je .true
-		mov r12, [r12 + accion.siguiente]
-		mov al, FALSE
+		mov r12, QWORD[r12 + accion.siguiente]
+		mov al, BYTE FALSE
 		jmp .ciclo
 	.true: 
 		mov al, TRUE
@@ -150,17 +150,17 @@ invocar_acciones:
 	mov r13, rsi ; tablero
 
 	.loop: 
-		cmp r12, 0 
+		cmp r12, BYTE 0 
 		je .end 
 
-		mov r14, [r12 + accion.destino] ;struct carta
+		mov r14, QWORD [r12 + accion.destino] ;struct carta. No hace falta el QWORD porque r14 ya especifica el tamaño. No obstante lo pongo por legibilidad.
 		cmp BYTE[r14 + carta.en_juego], FALSE ;si es false me muevo y me voy
 		je .nextAction
 		; agarro la funcion de invocar (la direccion de memoria)
 		xor r8, r8
 	
 	.saveFn:
-		mov r8, [r12 + accion.invocar] ; ya tengo la funcion invocar
+		mov r8, QWORD [r12 + accion.invocar] ; ya tengo la funcion invocar
 		mov rdi, r13
 		mov rsi, r14
 
@@ -177,7 +177,7 @@ invocar_acciones:
 
 
 	.nextAction:
-		mov r12, [r12 + accion.siguiente]
+		mov r12, QWORD [r12 + accion.siguiente]
 		jmp .loop
 	.end: 
 		pop r14
@@ -228,7 +228,7 @@ contar_cartas:
 		cmp r11, 50 ;tiene 50 posiciones
 		je .end
 		lea r8, [rdi + tablero.campo] ; tablero -> campo
-		mov r9, [r8 + r11 * 8] ; muevo i, j para el tablero
+		mov r9, QWORD [r8 + r11 * 8] ; muevo i, j para el tablero
 
 		cmp r9, BYTE 0
 		je .inc
