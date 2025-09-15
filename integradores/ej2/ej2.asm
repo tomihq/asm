@@ -262,10 +262,9 @@ modificarUnidad:
 	mov rdi, rbx 
 	call free
 
-	; mueve a mapa[x][y] el
 	.mov: 
 		; mapa[x][y] = item2
-		lea rbx, [r15] ;hasta aca esta bien parece. lo pisa ok
+		lea rbx, [r15] ;hasta aca esta bien parece. lo pisa
 		jmp .end
 	.modify_instance:
 		mov rdi, rbx 
