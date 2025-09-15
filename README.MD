@@ -9,3 +9,6 @@ ld -o [file] [file].o
 
 ## Execute
 ./[file]
+
+## Si te da error de Python aun teniendo las librerías
+Borrá la carpeta de venv de test_utils y volvé a hacer make.
