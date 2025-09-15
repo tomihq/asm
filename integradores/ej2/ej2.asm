@@ -238,7 +238,7 @@ modificarUnidad:
 	call malloc ;me devuelve un puntero a la copia en rax 
 	mov r15, rax; r15 ahora tiene la copia item2
 
-	; preparo call a strcpy
+	; preparo call a strcpy. preparo la direccion a la que donde busque el puntero.
 	lea rdi, [r15 + ATTACKUNIT_CLASE]
 	lea rsi, [rbx + ATTACKUNIT_CLASE]
 	call strcpy ; pisa de una la ref.
@@ -264,12 +264,12 @@ modificarUnidad:
 
 	.mov: 
 		; mapa[x][y] = item2
-		lea rbx, [r15] ;hasta aca esta bien parece. lo pisa
+		lea rbx, [r15] ; ACA
 		jmp .end
 	.modify_instance:
 		mov rdi, rbx 
 		call r13
-		lea rbx, [r15] ;;ojo esto. seria pisar? 
+		lea rbx, [r15] ; ACA
 		jmp .end
 
 	.end: 
