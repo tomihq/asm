@@ -227,7 +227,6 @@ contar_cartas:
 	.loop:
 		cmp r11, 50 ;tiene 50 posiciones
 		je .end
-		;(x + desplazamiento + y) * tamañoElems del array
 		lea r8, [rdi + tablero.campo] ; tablero -> campo
 		mov r9, [r8 + r11 * 8] ; muevo i, j para el tablero
 
