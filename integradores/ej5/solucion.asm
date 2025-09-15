@@ -151,7 +151,7 @@ invocar_acciones:
 
 	.loop: 
 		cmp r12, 0 
-		je .fin 
+		je .end 
 
 		mov r14, [r12 + accion.destino] ;struct carta
 		cmp BYTE[r14 + carta.en_juego], FALSE ;si es false me muevo y me voy
@@ -179,7 +179,7 @@ invocar_acciones:
 	.nextAction:
 		mov r12, [r12 + accion.siguiente]
 		jmp .loop
-	.fin: 
+	.end: 
 		pop r14
 		pop r13
 		pop r12
