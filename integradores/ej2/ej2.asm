@@ -219,7 +219,8 @@ modificarUnidad:
 	imul rax, 255            ; rax = x * 255
 	add rax, r15             ; rax = x*255 + y
 	imul rax, 8              ; tamaño de cada elemento = 8 bytes
-	mov rbx, [r12 + rax]
+	mov r14, rax			 ; indice
+	mov rbx, [r12 + r14]
 
 	; caso item == NULL
 	cmp rbx, 0
@@ -264,12 +265,12 @@ modificarUnidad:
 
 	.mov: 
 		; mapa[x][y] = item2
-		lea rbx, [r15] ; ACA
+		mov [r12 + r14], r15 ; ACA
 		jmp .end
 	.modify_instance:
 		mov rdi, rbx 
 		call r13
-		lea rbx, [r15] ; ACA
+		mov [r12 + r14], r15 ; ACA
 		jmp .end
 
 	.end: 
