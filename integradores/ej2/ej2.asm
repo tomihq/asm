@@ -22,7 +22,7 @@ EJERCICIO_2A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 ; Funciones a implementar:
 ;   - contarCombustibleAsignado
 global EJERCICIO_2B_HECHO
-EJERCICIO_2B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_2B_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ; Marca el ejercicio 1C como hecho (`true`) o pendiente (`false`).
 ;
@@ -130,10 +130,59 @@ optimizar:
 	ret
 
 global contarCombustibleAsignado
+; mapa_t mapa -> RDI 
+; uint16_t (*fun_combustible)(char) -> RSI
+; IDEA: Como voy a llamar a fun_combustible necesito si o si guardarme el mapa y la función, así que voy a usar dos registros no volátiles, por lo cual, los preservo antes de usarlos.
+; Necesito un contador que preserve su valor, otro registro no volatil.
+; RTA por EAX
 contarCombustibleAsignado:
-	; r/m64 = mapa_t           mapa
-	; r/m64 = uint16_t*        fun_combustible(char*)
-	ret
+	push rbp ;alineado
+	push r12 ;desalineado
+	push r13 ;alineado
+	push r14 ;desalineado
+	push r15 ;alineado. mapa 
+	push rbx ;desalineado 
+
+	mov r12, rdi ;preservo mapa. no blanqueo porque piso 64 
+	mov r13, rsi ;preservo fun. no blanqueo porque piso 64 
+	
+	;blanqueo xq no voy a usar 64.
+	xor r14, r14 ; contador
+	xor r15, r15
+	xor rax, rax ; rta
+	xor rbx, rbx ;acum combustible
+
+	.loop: 
+		cmp r14, MAPA_SIZE
+		jae .fin
+		mov r15, [r12 + r14 * 8] ;me muevo en el mapa. obtengo el struct.
+		
+		cmp r15, 0; si es null hago continue
+		je .incloop
+
+		lea r8, [r15]; obtengo la ref a item -> clase
+		mov rdi, r8; preparo el parametro de item -> clase para fun_combustible
+		
+		;preparo llamada
+		sub rsp, 8
+		call r13 ; la respuesta viene en rax. Es un entero de 32 bits. 
+		add rsp, 8
+
+		mov r9w, WORD[r15 + ATTACKUNIT_COMBUSTIBLE] ;obtengo combustible de la clase.
+		sub r9w, ax; combustibleMapa - combustibleClase
+		add bx, r9w; almaceno en 32 bits la suma de los numeros de 16. 
+	.incloop:
+		inc r14 
+		jmp .loop
+	.fin 
+		mov eax, ebx 
+		pop rbx
+		pop r15
+		pop r14 
+		pop r13
+		pop r12
+		pop rbp
+		ret
 
 global modificarUnidad
 modificarUnidad:

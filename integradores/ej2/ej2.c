@@ -18,7 +18,7 @@ bool EJERCICIO_2A_HECHO = true;
  * Funciones a implementar:
  *   - contarCombustibleAsignado
  */
-bool EJERCICIO_2B_HECHO = false;
+bool EJERCICIO_2B_HECHO = true;
 
 /**
  * Marca el ejercicio 1B como hecho (`true`) o pendiente (`false`).
@@ -54,8 +54,22 @@ void optimizar(mapa_t mapa, attackunit_t* compartida, uint32_t (*fun_hash)(attac
 
 /**
  * OPCIONAL: implementar en C
+ * Tengo garantizado el mapa optimizado asumo.
+ * IDEA: Por cada attackunit_t != NULL, calculo la resta entre combustibleActual (mapa[i][j] -> combustible - fun_combustible(mapa[i][j] -> clase)).
+ Hago ABS para tenerlo positivo, I guess? Ojo con los tamaños. La RTA es de 32 pero las cuentas las hago con 16.  Podría tener basura.
  */
 uint32_t contarCombustibleAsignado(mapa_t mapa, uint16_t (*fun_combustible)(char*)) {
+    uint32_t cantidadCombustibleAsignado = 0;
+    for(int i = 0 ; i < 255 ; i++){
+        for (int j = 0; j<255; j++){
+            attackunit_t* item = mapa[i][j];
+            if(item == NULL) continue;
+            uint32_t combustibleClase = fun_combustible(item -> clase);
+            uint32_t combustibleMapa =item -> combustible;
+            cantidadCombustibleAsignado += combustibleMapa - combustibleClase;
+        }
+    }
+    return cantidadCombustibleAsignado;
 }
 
 /**
