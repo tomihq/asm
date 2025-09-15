@@ -26,7 +26,7 @@ bool EJERCICIO_2B_HECHO = true;
  * Funciones a implementar:
  *   - modificarUnidad
  */
-bool EJERCICIO_2C_HECHO = false;
+bool EJERCICIO_2C_HECHO = true;
 
 /**
  * OPCIONAL: implementar en C
@@ -74,6 +74,31 @@ uint32_t contarCombustibleAsignado(mapa_t mapa, uint16_t (*fun_combustible)(char
 
 /**
  * OPCIONAL: implementar en C
+ Idea: Si la unidad que está en x,y tiene references > 0 entonces tengo que hacer una copia (malloc). Restar 1 a la referencia de [x][y] original.
+ Enviar ese puntero creado con malloc a fun_modificar.  
+
  */
 void modificarUnidad(mapa_t mapa, uint8_t x, uint8_t y, void (*fun_modificar)(attackunit_t*)) {
+    attackunit_t* item = mapa[x][y];
+    if(item == NULL) return; 
+    if(item -> references == 0){
+            fun_modificar(item);
+            mapa[x][y] = item;
+            return; 
+    }
+    
+    attackunit_t* item2 = malloc(sizeof(attackunit_t));
+    strcpy((item2 -> clase), (item -> clase));
+    item2 -> combustible = item -> combustible;
+    item2 -> references = 1; // por default las referencias empiezan en 1.
+    item -> references -= 1; 
+    fun_modificar(item2);
+    mapa[x][y] = item2;
+    if(item -> references == 0){ //si ya no la usa nadie, la borro. 
+        free(item);
+    }
+
 }
+char clase[11];       //asmdef_offset:ATTACKUNIT_CLASE
+	uint16_t combustible; //asmdef_offset:ATTACKUNIT_COMBUSTIBLE
+	uint8_t references; 

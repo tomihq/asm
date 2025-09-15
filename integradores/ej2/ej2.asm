@@ -29,7 +29,7 @@ EJERCICIO_2B_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 ; Funciones a implementar:
 ;   - modificarUnidad
 global EJERCICIO_2C_HECHO
-EJERCICIO_2C_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_2C_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
@@ -174,7 +174,8 @@ contarCombustibleAsignado:
 	.incloop:
 		inc r14 
 		jmp .loop
-	.fin 
+
+	.fin: 
 		mov eax, ebx 
 		pop rbx
 		pop r15
@@ -185,9 +186,49 @@ contarCombustibleAsignado:
 		ret
 
 global modificarUnidad
+; como voy a llamar a strcpy, malloc y fun modificar necesito preservar todos los registros.
+; mapa_t mapa -> RDI
+; uint8_t x -> RSI
+; uint8_t y -> RDX
+; void fun_modificar(attackunit_t*) -> RCX
+
+; necesito preservar mapa[x][y] (item) en los llamados así que necesito un registro no-volatil. Lo guardo antes.
+; necesito preservar item2 en los llamados así que necesito otro registro no-volatil. lo guardo antes.
+; no me alcanzan los registros no-volatiles asi que tengo que usar el stack.  
 modificarUnidad:
-	; r/m64 = mapa_t           mapa
-	; r/m8  = uint8_t          x
-	; r/m8  = uint8_t          y
-	; r/m64 = void*            fun_modificar(attackunit_t*)
-	ret
+	push rbp ; alineado
+	mov rbp, rsp 
+	push r12 ; desalineado
+	push r13 ; alineado
+	push r14 ; desalineado
+	push r15 ; alineado
+	push rbx ; desalineado
+
+	;preservo volátiles
+	mov r12, rdi ; mapa
+	mov r13, rcx ; fun_modificar
+
+	;blanqueo registros grandes para no ensuciar los 8 bits
+	movzx r14, si ;x
+	movzx r15, dx ;y  PUEDO usar r15 en otro lado. Ya no me hace falta.
+
+	;desplazamiento en memoria para matriz
+	add r14, r15; x+y
+	
+	mov rbx, [r12 + r14 * 8]; obtengo mapa[x][y]
+	cmp rbx, 0
+	je .fin
+
+	
+	
+
+
+	.fin: 
+
+		pop rbx 
+		pop r15
+		pop r14
+		pop r13
+		pop r12
+		pop rbp
+		ret
