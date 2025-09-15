@@ -58,7 +58,7 @@ EJERCICIO_2_HECHO: db TRUE
 ; Funciones a implementar:
 ;   - contar_cartas
 global EJERCICIO_3_HECHO
-EJERCICIO_3_HECHO: db FALSE
+EJERCICIO_3_HECHO: db TRUE
 
 section .text
 
@@ -193,7 +193,7 @@ invocar_acciones:
 ; a las cartas en juego cómo a las fuera de juego (siempre que estén visibles
 ; en el campo).
 ;
-; Se debe considerar el caso de que el campo contenga cartas que no pertenecen
+; Se debe considerar el caso de que el campo contenga cartas que no pertenecenmov
 ; a ninguno de los dos jugadores.
 ;
 ; Las posiciones libres del campo tienen punteros nulos en lugar de apuntar a
@@ -206,12 +206,48 @@ invocar_acciones:
 ; void contar_cartas(tablero_t* tablero, uint32_t* cant_rojas, uint32_t* cant_azules);
 ; ```
 global contar_cartas
+; tablero_t* tablero -> RDI
+; uint32_t* cant_rojas -> RSI
+; uint32_t* cant_azules -> RDX
+; IDEA: no necesito ni siquiera usar registros no-volatiles porque no tengo calls. 
+; sin embargo, necesito varios registros (ademas de los 3 de parametros), necesito 2 para acumular, 1 para referir a carta.
+; necesito un indice para moverme desde 0 a 50. Para acceder a la matriz puedo usar un solo indice. 
 contar_cartas:
-	; Te recomendamos llenar una tablita acá con cada parámetro y su
-	; ubicación según la convención de llamada. Prestá atención a qué
-	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
-	;
-	; r/m64 = tablero_t* tablero
-	; r/m64 = uint32_t*  cant_rojas
-	; r/m64 = uint32_t*  cant_azules
-	ret
+	push rbp
+	mov rbp, rsp
+
+	;limpio 
+	xor r8, r8 ; tablero -> campo
+	xor r9, r9 ; campo[i][j]
+	xor r10, r10 ;carta_t* carta
+	xor r11, r11 ;acumulador de indices
+	mov DWORD[rsi], 0
+	mov DWORD[rdx], 0
+
+	.loop:
+		cmp r11, 50 ;tiene 50 posiciones
+		je .end
+		;(x + desplazamiento + y) * tamañoElems del array
+		lea r8, [rdi + tablero.campo] ; tablero -> campo
+		mov r9, [r8 + r11 * 8] ; muevo i, j para el tablero
+
+		cmp r9, BYTE 0
+		je .inc
+
+		cmp BYTE[r9 + carta.jugador], 1
+		je .inc_first_player
+		cmp BYTE[r9 + carta.jugador], 2
+		je .inc_second_player
+		jmp .inc
+	.inc_first_player:
+		INC DWORD [rsi]
+		jmp .inc
+	.inc_second_player:
+		INC DWORD [rdx]
+		jmp .inc
+	.inc:
+		inc r11
+		jmp .loop
+	.end: 
+		pop rbp
+		ret

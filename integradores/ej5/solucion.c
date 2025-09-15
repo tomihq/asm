@@ -26,7 +26,7 @@ bool EJERCICIO_2_HECHO = true;
  * Funciones a implementar:
  *   - contar_cartas
  */
-bool EJERCICIO_3_HECHO = false;
+bool EJERCICIO_3_HECHO = true;
 
 /**
  * Dada una secuencia de acciones determinar si hay alguna cuya carta tenga un
@@ -111,5 +111,33 @@ void invocar_acciones(accion_t* accion, tablero_t* tablero) {
  * como parámetro.
  */
 void contar_cartas(tablero_t* tablero, uint32_t* cant_rojas, uint32_t* cant_azules) {
+	//necesito recorrer el tablero e ir contando las cartas. 
+	//no me importa que estén en_juego no.
+	//tengo que llevar un acumulador para rojas y azules.
+	//las rojas tienen 1 byte jugador === 1
+	//las azules tienen 1 byte jugador === 2
+	//la idea es ir recorriendo el campo, recordar que es de 10 * 5. Cada ítem es una carta. Ahí tengo que hacer lo de arriba.
+	//es probable que cuando "quiera una carta" no haya nada. verificar null.
+	//puede haber un jugador que no sea ni el 1 ni el 2. lo cual no hay que contar nada ahi. 
 	*cant_rojas = *cant_azules = 0;
+	uint32_t acum_rojas = 0; 
+	uint32_t acum_azules = 0; 
+	//5 x 10
+	for(int i = 0; i<5; i++){
+		for(int j = 0; j<10; j++){
+			carta_t* carta = tablero -> campo[i][j]; 
+			if(carta == NULL) continue; 
+	
+			if(carta -> jugador == 1) acum_rojas += 1;
+			else if(carta -> jugador == 2) acum_azules+= 1; 
+			
+			continue;
+
+			
+		}
+	}
+
+	*cant_rojas = acum_rojas;
+	*cant_azules = acum_azules;
+	
 }
