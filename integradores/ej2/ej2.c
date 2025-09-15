@@ -93,10 +93,11 @@ void modificarUnidad(mapa_t mapa, uint8_t x, uint8_t y, void (*fun_modificar)(at
     item2 -> references = 1; // por default las referencias empiezan en 1.
     item -> references -= 1; 
     fun_modificar(item2);
-    mapa[x][y] = item2;
     if(item -> references == 0){ //si ya no la usa nadie, la borro. 
         free(item);
     }
+    mapa[x][y] = item2;
+    
 
 }
 char clase[11];       //asmdef_offset:ATTACKUNIT_CLASE

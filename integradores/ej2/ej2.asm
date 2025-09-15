@@ -1,5 +1,6 @@
 extern malloc
 extern free
+extern strcpy
 
 section .rodata
 ; Acá se pueden poner todas las máscaras y datos que necesiten para el ejercicio
@@ -203,6 +204,7 @@ modificarUnidad:
 	push r14 ; desalineado
 	push r15 ; alineado
 	push rbx ; desalineado
+	sub rsp, 8 ; alineado
 
 	;preservo volátiles
 	mov r12, rdi ; mapa
@@ -210,21 +212,69 @@ modificarUnidad:
 
 	;blanqueo registros grandes para no ensuciar los 8 bits
 	movzx r14, si ;x
-	movzx r15, dx ;y  PUEDO usar r15 en otro lado. Ya no me hace falta.
+	movzx r15, dx ;y 
 
-	;desplazamiento en memoria para matriz
-	add r14, r15; x+y
-	
-	mov rbx, [r12 + r14 * 8]; obtengo mapa[x][y]
+	;busco [x][y] en matriz. Como primero tengo que recorrer todo x para poder incrementar el y tengo que hacer multiplicaciones.
+	mov rax, r14
+	imul rax, 255            ; rax = x * 255
+	add rax, r15             ; rax = x*255 + y
+	imul rax, 8              ; tamaño de cada elemento = 8 bytes
+	mov rbx, [r12 + rax]
+
+	; caso item == NULL
 	cmp rbx, 0
-	je .fin
+	je .end
 
+	; caso item -> references == 0
+	cmp BYTE[rbx + ATTACKUNIT_REFERENCES], 0
+	je .modify_instance
+
+	; caso references compartido
+	mov r8, ATTACKUNIT_SIZE ; almaceno el tamaño para crear copia.
 	
-	
+	;preparo parametros para malloc
+	mov rdi, r8
 
+	call malloc ;me devuelve un puntero a la copia en rax 
+	mov r15, rax; r15 ahora tiene la copia item2
 
-	.fin: 
+	; preparo call a strcpy
+	lea rdi, [r15 + ATTACKUNIT_CLASE]
+	lea rsi, [rbx + ATTACKUNIT_CLASE]
+	call strcpy ; pisa de una la ref.
 
+	; modifico item2
+	mov r9w, WORD[rbx + ATTACKUNIT_COMBUSTIBLE] ; piso combustible
+	mov [r15 + ATTACKUNIT_COMBUSTIBLE], r9w
+	inc BYTE[r15 + ATTACKUNIT_REFERENCES] ; pongo ref en 1
+
+	; modifico item 1
+	dec BYTE[rbx + ATTACKUNIT_REFERENCES] ;disminuyo ref ant
+
+	; preparo llamada a fun_modificar. HASTA ACA ESTA BIEN
+	mov rdi, r15 
+	call r13 ; hasta aca esta bien, modifica r15 como se espera.
+
+	; item -> references == 0
+	cmp BYTE[rbx + ATTACKUNIT_REFERENCES], 0
+	jne .mov
+
+	mov rdi, rbx 
+	call free
+
+	; mueve a mapa[x][y] el
+	.mov: 
+		; mapa[x][y] = item2
+		lea rbx, [r15] ;hasta aca esta bien parece. lo pisa ok
+		jmp .end
+	.modify_instance:
+		mov rdi, rbx 
+		call r13
+		lea rbx, [r15] ;;ojo esto. seria pisar? 
+		jmp .end
+
+	.end: 
+		add rsp, 8
 		pop rbx 
 		pop r15
 		pop r14
