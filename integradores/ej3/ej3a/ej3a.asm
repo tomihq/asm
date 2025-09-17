@@ -39,6 +39,8 @@ segmentar_casos:
     push rbp 
     mov rbp, rsp 
     ; preservo no volatiles
+    sub rsp, 8
+    push rbx 
     push r12
     push r13
     push r14
@@ -56,10 +58,10 @@ segmentar_casos:
         ; necesito crear un array de longitud 3 inicializado en 0 con numeros que van a ser enteros sin signo. Voy a usar malloc y memset. Va a ocupar 4 bytes por numero y 3 estados (12).
         mov rdi, 12
         call malloc ;tengo en rax el puntero a ese arreglo.
-    
+        mov r14, rax 
     .initializeLevelCounterArr: 
         ; aca tengo el int contadores[3] = {0, 0, 0}
-        mov rdi, rax 
+        mov rdi, r14 
         mov rsi, 12
         mov rdx, 0
         call memset
@@ -173,6 +175,8 @@ segmentar_casos:
         pop r14
         pop r13
         pop r12
+        pop rbx
+        add rsp, 8
         pop rbp 
         ret
 
