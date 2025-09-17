@@ -1,10 +1,13 @@
 extern malloc 
 extern memset 
+extern memcpy
 ;########### SECCION DE DATOS
 section .data
 
 ;########### SECCION DE TEXTO (PROGRAMA)
 section .text
+
+NULL EQU 0
 
 ; Completar las definiciones (serán revisadas por ABI enforcer):
 USUARIO_ID_OFFSET EQU 0 ;[0, 4) 
@@ -35,50 +38,143 @@ global segmentar_casos
 segmentar_casos:
     push rbp 
     mov rbp, rsp 
-
     ; preservo no volatiles
     push r12
     push r13
     push r14
-    
+    push r15
+
     ; preservo arreglo_casos y largo 
     mov r12, rdi 
-    mov r13, rsi 
+    mov r13d, esi 
 
-    ;limpio r14 
+    ; lo uso para preservar el array de cantidades por nivel. 
     xor r14, r14 
 
-    ; aca obtengo contadores[3]
-    ; necesito crear un array de longitud 3 inicializado en 0 con numeros que van a ser enteros sin signo. Voy a usar malloc y memset. Va a ocupar 4 bytes por numero y 3 estados (12).
-    mov rdi, 12
-    sub rsp, 8
-    call malloc ;tengo en rax el puntero a ese arreglo.
-    add rsp, 8
+    .createLevelCounterArr: 
+        ; aca obtengo contadores[3]
+        ; necesito crear un array de longitud 3 inicializado en 0 con numeros que van a ser enteros sin signo. Voy a usar malloc y memset. Va a ocupar 4 bytes por numero y 3 estados (12).
+        mov rdi, 12
+        call malloc ;tengo en rax el puntero a ese arreglo.
     
-    ; aca tengo el int contadores[3] = {0, 0, 0}
-    mov rdi, rax 
-    mov rsi, 12
-    mov rdx, 0
-    sub rsp, 8
-    call memset
-    add rsp, 8
-    mov r14, rax ; almaceno en r14 el puntero a los contadores
+    .initializeLevelCounterArr: 
+        ; aca tengo el int contadores[3] = {0, 0, 0}
+        mov rdi, rax 
+        mov rsi, 12
+        mov rdx, 0
+        call memset
+        mov r14, rax ; almaceno en r14 el puntero a los contadores
+    
+    .fillLevelCounterArr: 
+        ; aca preparo para llamar contar_casos_por_nivel
+        mov rdi, r12
+        mov rsi, r13
+        mov rdx, r14 ;esto lo mando por referencia por puntero
+        call contar_casos_por_nivel         ;me modifica directamente mi puntero. osea que r14 deberia haber cambiado.
+    
+    .assignSegmentationTPointer:
+        ;malloc para struct gral de rta. Despues de hacer cada malloc para cada struct puedo usar r14 de vuelta y pisarlo.
+        mov rdi, SEGMENTACION_SIZE
+        call malloc 
+        mov r15, rax; en r15 está el struct con los 3 punteros
+    .initializePointersOnSegmentationTPointer:
+        mov QWORD [r15 + SEGMENTACION_CASOS0_OFFSET], NULL
+        mov QWORD [r15 + SEGMENTACION_CASOS1_OFFSET], NULL 
+        mov QWORD [r15 + SEGMENTACION_CASOS2_OFFSET], NULL
+    .saveSpaceForArrPointers:
+        cmp DWORD [r14], 0 ;;si el estado 0 tiene 0 no hago nada.
+        je .assignFirstLevelArrMem 
+        xor r8, r8 ; lo uso para indice 
+        mov r8, [r14] ;almaceno la cantidad de structs que tiene el lvl 0
+        imul r8, CASO_SIZE; obtengo la cantidad de bytes que necesito para el array de structs
+        mov rdi, r8 
+        call malloc; obtengo en rax el puntero al lvl 0 
+        mov [r15 + SEGMENTACION_CASOS0_OFFSET], rax 
+    .assignFirstLevelArrMem:
+        cmp DWORD [r14 + 4], 0 ;;si el estado 1 tiene 0 no hago nada
+        je .assignSecondLevelArrMem
+        xor r8, r8 ; lo uso para indice 
+        mov r8, [r14 + 4] ;almaceno la cantidad de structs que tiene el lvl 1
+        imul r8, CASO_SIZE; obtengo la cantidad de bytes que necesito para el array de structs
+        mov rdi, r8 
+        call malloc; obtengo en rax el puntero al lvl 1
+        mov [r15 + SEGMENTACION_CASOS1_OFFSET], rax 
+    .assignSecondLevelArrMem: 
+        cmp DWORD [r14 + 8], 0;; si el estado 2 tiene 0 no hago nada
+        je .fillSegmentationPointerCases
+        mov r8, [r14 + 8] ;almaceno la cantidad de structs que tiene el lvl 2
+        imul r8, CASO_SIZE; obtengo la cantidad de bytes que necesito para el array de structs
+        mov rdi, r8 
+        call malloc; obtengo en rax el puntero al lvl 2
+        mov [r15 + SEGMENTACION_CASOS2_OFFSET], rax 
+    .fillSegmentationPointerCases: 
+        xor r8, r8; indice para barrer el largo
+        ; r12 arreglo casos
+        ; r13 largo
+        ; r15 struct con los 3 punteros
+        xor r14, r14; nivelActual
+        xor rdi, rdi; indice para cantidad de casos en nivel 0
+        xor rcx, rcx; indice para cantidad de casos en nivel 1
+        xor rdx, rdx; indice para cantidad de casos en nivel 2 
+        xor r9, r9; lo uso para calcular datos intermedios
+        xor r10, r10; lo uso para calcular indice del struct
+    
+    .fillSegmentationPointerCasesLoop:
+        cmp r8, r13 
+        je .end 
+        mov r10, r8
+        imul r10, CASO_SIZE
+        lea r9, [r12 + r10] ;struct actual = &arreglo_casos[i]. Es obligatorio que me traiga el puntero porque el struct pesa MAS que 64 bits. NO me lo puedo traer entero.
+        mov r10, [r9 + CASO_USUARIO_OFFSET] ;usuario actual (usuario_t)
+        mov r14, [r10 + USUARIO_NIVEL_OFFSET] ;nivel caso actual 
+        cmp r14, 0
+        je .fillSegmentationPointerCaseLoopZero
+        cmp r14, 1
+        je .fillSegmentationPointerCaseLoopOne
+        cmp r14, 2
+        je .fillSegmentationPointerCaseLoopTwo
+        jmp .incCycle
+    .fillSegmentationPointerCaseLoopZero:
+        mov r10, [r15 + SEGMENTACION_CASOS0_OFFSET] ; puntero al array nivel 0
+        imul rsi, rdi, CASO_SIZE                     ; offset dentro del array
+        lea rdi, [r10 + rsi]                         ; destino = &array[i0]
+        mov rsi, r9                                   ; origen = &arreglo_casos[i]
+        mov rdx, CASO_SIZE                            ; tamaño 16 bytes
+        call memcpy
+        inc rdi                                    ; incrementar contador de nivel 0
+        jmp .incCycle
+    .fillSegmentationPointerCaseLoopOne:
+        xor r10, r10
+        xor r14, r14
+        mov r10, [r15 + 8] ; array nivel 1 de structs
+        mov rsi, rcx 
+        imul rsi, CASO_SIZE
+        mov r14, [r10 + rsi] ;array nivel 1 indice (rcx * CASO_SIZE)
+        mov r14, r9; meto en array de casos nivel 1 el struct.
+        inc rsi
+        jmp .incCycle
 
-    ; aca preparo para llamar contar_casos_por_nivel
-    mov rdi, r12
-    mov rsi, r13
-    mov rdx, r14 ;esto lo mando por referencia por puntero
-    sub rsp, 8
-    call contar_casos_por_nivel
-    add rsp, 8
+    .fillSegmentationPointerCaseLoopTwo:
+        xor r10, r10
+        xor r14, r14
+        mov r10, [r15 + 16] ; array nivel 2 de structs
+         mov rsi, rdx
+        imul rsi, CASO_SIZE
+        mov r14, [r10 + rsi] ;array nivel 2 indice (rcx * CASO_SIZE)
+        mov r14, r9; meto en array de casos nivel 2 el struct.
+        inc rcx
+        jmp .incCycle
 
-    ;me modifica directamente mi puntero. osea que r14 deberia haber cambiado
-
-    pop r14
-    pop r13
-    pop r12
-    pop rbp 
-    ret
+    .incCycle:
+        inc r8
+        jmp .fillSegmentationPointerCasesLoop
+    .end: 
+        pop r15
+        pop r14
+        pop r13
+        pop r12
+        pop rbp 
+        ret
 
 
 ; caso_t* arreglo_casos - RDI
