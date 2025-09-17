@@ -1,0 +1,59 @@
+caso_t tiene un char[3] y las categorías tienen exactamente 3 letras. Así que no van a tener el backslash 0. Tengo que usar strnlen si debería considerar la longitud.
+
+segmentacion_t* es un puntero a un struct que contiene a su vez 3 punteros a arrays.
+
+La idea de no gastar memoria viene por el lado de que: como el enunciado me pide "segmentar los casos por nivel". La única memoria que tengo que gastar es crear los arrays y ponerles la longitud correcta para ese nivel.
+
+¿Por qué? Veamos un ejemplo para preparar la cabeza
+Sabemos que nos dan un arreglo de punteros que tenemos que recorrer.
+Digamos que tenemos 10 casos.
+Tenemos 3 niveles
+9 casos son de nivel 3 y 1 nivel 2. ¿Para qué gastarías la misma memoria creando el array para nivel 2 que el 3, o inclusive crear un array con tamaño gigante para el nivel 1 que no tiene elementos?
+
+El trabajo va a ser tedioso pero tiene que ser así: 
+1. Necesito una función que me diga cuantos casos hay por nivel.
+2. Necesito crear 3 arrays dinámicos que tengan tamaño: (8 * largoNivel) ¿Por qué? porque es un arreglo de punteros y todos los punteros ocupan 8 bytes. El largo nivel es la cantidad de casos exacta que hay para ese nivel. 
+3. Tengo que volver a recorrer la lista que me dieron inicialmente, pero ahora sí haciendo un if por casos y metiéndolo en el nivel que corresponda con &struct. ¿Por qué con &struct? Porque cuando yo tenga el struct no me interesa el valor, me interesa en donde está en memoria. 
+Al recorrer el array de casos tengo [caso1, caso2]. Si me voy moviendo por el puntero solo obtengo caso1, caso2 como valores. Yo necesito pararme en caso1 y decir, ok, necesito la dirección de caso1, entonces uso &caso1.
+
+Noto que la auxiliar que te dicen para calcular las longitudes es: 
+void contar_casos_por_nivel(caso_t* arreglo_casos, int largo, int* contadores) {
+}
+
+Lo cual nótese que nos dan un array de contadores para modificar. Es decir, nos dan un int contadores[] pero como se pasa por parámetro en C solo nos dan la dirección del primer elemento.
+Como es un entero sabemos que son de 32 bits, lo cual, en ASM tendríamos que eventualmente movernos 4 bytes para poder ir llenando cada contador. 
+
+Como el array de contadores parece que lo tenemos que mandar nosotros, tendremos que inicializarlo con longitud 3 todos en 0 (en ASM podría usar memset). ¿Por qué hardcodear a longitud 3? Porque son 3 niveles y así lo piden. 
+
+OK, hay una trampita. Parece que con los tests te cagan y te mandan estados mayores a 3 a veces.
+OK, hay otra trampita. Te dicen "ahorrar memoria" pero tenés que clonar el struct y guardarlo. No meter un puntero. Si fuese un array de punteros sería caso_t** 
+OK, hay otra trampita. El tema de "ahorrar memoria" te lo dicen con la idea de que si un nivel no tiene casos, no ahorres memoria para eso. Era lo que decía yo, solo que "más extremo". Al parecer si hacés malloc con 0 explota (no te da null)
+
+Para movernos en arreglo_casos en C nos basta con sumar 1 pero en ASM sería 8 * indice (xq acá 1 se traduce al tamaño del dato y el índice xq en el for ya nos lo da gratis).
+Tengo garantizado siempre que largo es el tamaño del array que me dan por primer parámetro. 
+
+La salida de la función es 
+segmentacion_t* segmentar_casos(caso_t* arreglo_casos, int largo){}
+
+typedef struct {
+	uint32_t id; //asmdef_offset:USUARIO_ID_OFFSET
+	uint32_t nivel; //asmdef_offset:USUARIO_NIVEL_OFFSET
+} usuario_t; //asmdef_size:USUARIO_SIZE
+
+typedef struct {
+	char categoria[3]; //asmdef_offset:CASO_CATEGORIA_OFFSET
+	uint16_t estado; //asmdef_offset:CASO_ESTADO_OFFSET
+	usuario_t* usuario; //asmdef_offset:CASO_USUARIO_OFFSET
+} caso_t; //asmdef_size:CASO_SIZE
+
+typedef struct {
+	caso_t* casos_nivel_0; //asmdef_offset:SEGMENTACION_CASOS0_OFFSET
+	caso_t* casos_nivel_1; //asmdef_offset:SEGMENTACION_CASOS1_OFFSET
+	caso_t* casos_nivel_2; //asmdef_offset:SEGMENTACION_CASOS2_OFFSET
+} segmentacion_t; //asmdef_size:SEGMENTACION_SIZE
+
+Entonces, además de reservar memoria para los arrays de punteros, también necesito reservar memoria para el struct que doy de salida. El tamaño de este será de 24 bytes y no necesita padding porque está alineado a un múltiplo del mayor elemento.
+
+¿Voy a usar alguna otra función después de los de las longitudes? creo que no. Así que los registros los tendré que ir viendo en el momento. 
+Osea, hago malloc (struct grande) + largosArrays + mallocArrays y creo que después no hay mas 
+
