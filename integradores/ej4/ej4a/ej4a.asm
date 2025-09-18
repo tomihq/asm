@@ -14,6 +14,8 @@ FALSE EQU 0
 ; Marca un ejercicio como hecho
 TRUE  EQU 1
 
+NULL EQU 0
+
 ; Marca el ejercicio 1A como hecho (`true`) o pendiente (`false`).
 ;
 ; Funciones a implementar:
@@ -26,7 +28,7 @@ EJERCICIO_1A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 ; Funciones a implementar:
 ;   - summon_fantastruco
 global EJERCICIO_1B_HECHO
-EJERCICIO_1B_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1B_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ;########### ESTOS SON LOS OFFSETS Y TAMAÑO DE LOS STRUCTS
 ; Completar las definiciones (serán revisadas por ABI enforcer):
@@ -96,8 +98,30 @@ init_fantastruco_dir:
 	ret ;No te olvides el ret!
 
 ; fantastruco_t* summon_fantastruco();
+; idea basada en c: necesito si o si un registro no volatil para almacenar fantastruco_t* fantastruco apenas use malloc.
+; despues necesito setear con BYTE [fantastruco +OFFSET_FACEUP], 1 y [fantastruco + OFFSET_ARCHETYPE], NULL / 0 segun quiera.
+; por ultimo llamo a init_fantastruco_dir
 global summon_fantastruco
 summon_fantastruco:
 	; Esta función no recibe parámetros
+	push rbp
+	mov rbp, rsp
+	push r12
 
+	;; llamo malloc
+	mov rdi, FANTASTRUCO_SIZE
+	call malloc 
+	mov r12, rax; fantastruco_t* fantastruco
+
+	mov BYTE[r12 + FANTASTRUCO_FACEUP_OFFSET], 1
+	mov BYTE [r12 + FANTASTRUCO_ARCHETYPE_OFFSET], NULL
+	
+	;preparo llamada 
+	mov rdi, r12 
+	call init_fantastruco_dir
+
+	;muevo rta a rax
+	mov rax, r12
+	pop r12
+	pop rbp
 	ret ;No te olvides el ret!
