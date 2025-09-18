@@ -17,7 +17,7 @@ section .rodata
 
 section .text
 
-; void invocar_habilidad(void* carta, char* habilidad);
+; void invocar_habilidad(void* carta, char* habilidad); ojo, tiene problemas de valgrind.
 invocar_habilidad:
     push rbp
     mov rbp, rsp
