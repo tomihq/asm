@@ -107,6 +107,7 @@ summon_fantastruco:
 	push rbp
 	mov rbp, rsp
 	push r12
+	sub rsp, 8
 
 	;; llamo malloc
 	mov rdi, FANTASTRUCO_SIZE
@@ -122,6 +123,8 @@ summon_fantastruco:
 
 	;muevo rta a rax
 	mov rax, r12
+
+	add rsp, 8
 	pop r12
 	pop rbp
 	ret ;No te olvides el ret!
