@@ -35,6 +35,7 @@ ESTADISTICAS_SIZE EQU 7
 
 ;segmentacion_t* segmentar_casos(caso_t* arreglo_casos, int largo)
 global segmentar_casos
+/*
 segmentar_casos:
     push rbp 
     mov rbp, rsp 
@@ -51,13 +52,13 @@ segmentar_casos:
     ; lo uso para preservar el array de cantidades por nivel. 
     xor r14, r14 
 
-    .createLevelCounterArr: 
+    ; createLevelCounterArr: 
         ; aca obtengo contadores[3]
         ; necesito crear un array de longitud 3 inicializado en 0 con numeros que van a ser enteros sin signo. Voy a usar malloc y memset. Va a ocupar 4 bytes por numero y 3 estados (12).
         mov rdi, 12
         call malloc ;tengo en rax el puntero a ese arreglo.
     
-    .initializeLevelCounterArr: 
+    ; initializeLevelCounterArr: 
         ; aca tengo el int contadores[3] = {0, 0, 0}
         mov rdi, rax 
         mov rsi, 12
@@ -65,22 +66,23 @@ segmentar_casos:
         call memset
         mov r14, rax ; almaceno en r14 el puntero a los contadores
     
-    .fillLevelCounterArr: 
+    ; fillLevelCounterArr: 
         ; aca preparo para llamar contar_casos_por_nivel
         mov rdi, r12
         mov rsi, r13
         mov rdx, r14 ;esto lo mando por referencia por puntero
         call contar_casos_por_nivel         ;me modifica directamente mi puntero. osea que r14 deberia haber cambiado.
     
-    .assignSegmentationTPointer:
+    ; assignSegmentationTPointer:
         ;malloc para struct gral de rta. Despues de hacer cada malloc para cada struct puedo usar r14 de vuelta y pisarlo.
         mov rdi, SEGMENTACION_SIZE
         call malloc 
         mov r15, rax; en r15 está el struct con los 3 punteros
-    .initializePointersOnSegmentationTPointer:
+    ; initializePointersOnSegmentationTPointer
         mov QWORD [r15 + SEGMENTACION_CASOS0_OFFSET], NULL
         mov QWORD [r15 + SEGMENTACION_CASOS1_OFFSET], NULL 
         mov QWORD [r15 + SEGMENTACION_CASOS2_OFFSET], NULL
+    
     .saveSpaceForArrPointers:
         cmp DWORD [r14], 0 ;;si el estado 0 tiene 0 no hago nada.
         je .assignFirstLevelArrMem 
@@ -90,6 +92,7 @@ segmentar_casos:
         mov rdi, r8 
         call malloc; obtengo en rax el puntero al lvl 0 
         mov [r15 + SEGMENTACION_CASOS0_OFFSET], rax 
+
     .assignFirstLevelArrMem:
         cmp DWORD [r14 + 4], 0 ;;si el estado 1 tiene 0 no hago nada
         je .assignSecondLevelArrMem
@@ -99,6 +102,7 @@ segmentar_casos:
         mov rdi, r8 
         call malloc; obtengo en rax el puntero al lvl 1
         mov [r15 + SEGMENTACION_CASOS1_OFFSET], rax 
+
     .assignSecondLevelArrMem: 
         cmp DWORD [r14 + 8], 0;; si el estado 2 tiene 0 no hago nada
         je .fillSegmentationPointerCases
@@ -107,6 +111,7 @@ segmentar_casos:
         mov rdi, r8 
         call malloc; obtengo en rax el puntero al lvl 2
         mov [r15 + SEGMENTACION_CASOS2_OFFSET], rax 
+        
     .fillSegmentationPointerCases: 
         xor r8, r8; indice para barrer el largo
         ; r12 arreglo casos
@@ -136,32 +141,46 @@ segmentar_casos:
         jmp .incCycle
     .fillSegmentationPointerCaseLoopZero:
         mov r10, [r15 + SEGMENTACION_CASOS0_OFFSET] ; puntero al array nivel 0
+        cmp r10, 0
+        je .incCycle
         imul rsi, rdi, CASO_SIZE                     ; offset dentro del array
+        ;preparo memcpy
+        push rdi 
+        push rdx 
         lea rdi, [r10 + rsi]                         ; destino = &array[i0]
         mov rsi, r9                                   ; origen = &arreglo_casos[i]
         mov rdx, CASO_SIZE                            ; tamaño 16 bytes
         call memcpy
+        pop rdx 
+        pop rdi
         inc rdi                                    ; incrementar contador de nivel 0
         jmp .incCycle
     .fillSegmentationPointerCaseLoopOne:
         xor r10, r10
         xor r14, r14
-        mov r10, [r15 + 8] ; array nivel 1 de structs
-        mov rsi, rcx 
+        mov r10, [r15 + SEGMENTACION_CASOS1_OFFSET] ; array nivel 1 de structs
+        cmp r10, 0
+        je .incCycle
         imul rsi, CASO_SIZE
-        mov r14, [r10 + rsi] ;array nivel 1 indice (rcx * CASO_SIZE)
-        mov r14, r9; meto en array de casos nivel 1 el struct.
+        lea rdi, [r10 + rsi]                         ; destino = &array[i0]
+        mov rsi, r9                                   ; origen = &arreglo_casos[i]
+        mov rdx, CASO_SIZE 
+        call memcpy   
         inc rsi
         jmp .incCycle
 
     .fillSegmentationPointerCaseLoopTwo:
         xor r10, r10
         xor r14, r14
-        mov r10, [r15 + 16] ; array nivel 2 de structs
-         mov rsi, rdx
+        mov r10, [r15 + SEGMENTACION_CASOS2_OFFSET] ; array nivel 2 de structs
+        cmp r10, 0
+        je .incCycle
+        mov rsi, rdx
         imul rsi, CASO_SIZE
-        mov r14, [r10 + rsi] ;array nivel 2 indice (rcx * CASO_SIZE)
-        mov r14, r9; meto en array de casos nivel 2 el struct.
+        lea rdi, [r10 + rsi]                         ; destino = &array[i0]
+        mov rsi, r9                                   ; origen = &arreglo_casos[i]
+        mov rdx, CASO_SIZE
+        call memcpy
         inc rcx
         jmp .incCycle
 
@@ -169,12 +188,14 @@ segmentar_casos:
         inc r8
         jmp .fillSegmentationPointerCasesLoop
     .end: 
+        mov rax, r15
         pop r15
         pop r14
         pop r13
         pop r12
         pop rbp 
         ret
+*/
 
 
 ; caso_t* arreglo_casos - RDI
