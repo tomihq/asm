@@ -19,7 +19,7 @@ TRUE  EQU 1
 ; Funciones a implementar:
 ;   - init_fantastruco_dir
 global EJERCICIO_1A_HECHO
-EJERCICIO_1A_HECHO: db FALSE ; Cambiar por `TRUE` para correr los tests.
+EJERCICIO_1A_HECHO: db TRUE ; Cambiar por `TRUE` para correr los tests.
 
 ; Marca el ejercicio 1B como hecho (`true`) o pendiente (`false`).
 ;
@@ -42,13 +42,57 @@ FANTASTRUCO_SIZE EQU 32
 
 ; void init_fantastruco_dir(fantastruco_t* card);
 global init_fantastruco_dir
+; fantastruco_t* card -> RDI 64 bits.
+;idea basada en C: 
+;necesito registro no volatil para preservar card.
+;necesito registro no volatil para preservar sleepEntry, wakeupEntry. 
+;necesito registro no volatil para preservar directory_t dir.
+;para hacer dir[0] = sleepEntry puedo hacer mov [dir + (indice * tamañoPuntero)], sleepEntry
+;para hacer dir[1] = wakeupEntry puedo hacer mov [dir + (indice * tamañoPuntero)], wakeupEntry. El mov vale porque le estoy moviendo un puntero. Entra sí o sí. 
+;para hacer card -> __dir y pisarle dir puedo hacer mov [card + DIR_OFFSET], dir
+;para hacer card -> __dir_entries y pisarle el 2 puedo hacer mov WORD[ card + DIR_ENTRIES], 2. Notar que es un 2 pero el campo es de 2 bytes (16 bits).
+; Ojo: chequear cosas que no estoy seguro: 
+; ¿asumo que es simil a mandarsela así nomas en C? mov rsi, wakeup será igual a create_dir_entry(wakeup)?
 init_fantastruco_dir:
-	; Te recomendamos llenar una tablita acá con cada parámetro y su
-	; ubicación según la convención de llamada. Prestá atención a qué
-	; valores son de 64 bits y qué valores son de 32 bits o 8 bits.
-	;
-	; r/m64 = fantastruco_t*     card
+	push rbp ;alineado
+	mov rbp, rsp 
+	push r12 ;desalineado
+	push r13 ;alineado
+	push r14 ;desalineado
+	push r15 ;alineado
 
+	;preservo fantastruco_t* card
+	mov r12, rdi; r12 tiene fantastruco_t* card
+
+	;preparo el call a create_dir_entry (sleep). me devuelve por rax directory_entry_t*. Un char y un puntero. (ambos son considerados enteros o punteros)
+	mov rdi, sleep_name ;string sleep
+	mov rsi, sleep ;funcion sleep
+	call create_dir_entry
+	mov r13, rax ;directory_entry_t* sleepEntry
+
+	;preparo el call a create_dir_entry (wakeup). me devuelve por rax directory_entry_t*. Un char y un puntero. (ambos son considerados enteros o punteros)
+	mov rdi, wakeup_name ;string wakeup
+	mov rsi, wakeup ;funcion wakeup. 
+	call create_dir_entry 
+	mov r14, rax ;directory_entry_t* wakeupEntry
+
+	;preparo el call para crear directory_t dir 
+	mov rdi, 16 ;necesito solo espacio para dos punteros
+	call malloc
+	mov r15, rax ; directory_t dir
+
+	mov QWORD[r15], r13
+	mov QWORD[r15 + 8], r14 ;revisar esto. Mi idea es moverme al siguiente indice del array. EL array es de punteros. 
+
+	mov QWORD[r12 + FANTASTRUCO_DIR_OFFSET], r15 ;paso a fantastruco_t* el directory_t dir
+	mov WORD[r12 + FANTASTRUCO_ENTRIES_OFFSET], 2
+
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
 	ret ;No te olvides el ret!
 
 ; fantastruco_t* summon_fantastruco();
