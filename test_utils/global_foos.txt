@@ -1,8 +1,0 @@
-global_foo_label malloc
-global_foo_label sleep
-global_foo_label wakeup
-global_foo_label create_dir_entry
-global_foo_label EJERCICIO_1A_HECHO
-global_foo_label EJERCICIO_1B_HECHO
-global_foo_label init_fantastruco_dir
-global_foo_label summon_fantastruco
