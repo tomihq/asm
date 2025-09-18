@@ -47,9 +47,9 @@ void init_fantastruco_dir(fantastruco_t* card) {
 bool EJERCICIO_1B_HECHO = true;
 
 // OPCIONAL: implementar en C
+// IDEA: necesito reusar lo mismo que antes creo. Porque me piden crear ahora un puntero a fantastruco_t* inicializado apropidamente con face_up = 1 yel atributo __archetype = null. Asumo que la anterior de sleep y wakeup ya era genérica (porque dice CARTA GENERICA)
+//Aca me piden GENERAR PUNTERO A UNA CARTA FANTASTRUCO GENERICA. por eso, reuso lo de antes (que seteaba habilidades para la generica.)
 fantastruco_t* summon_fantastruco() {
-
-    //necesito reusar lo mismo que antes creo. Porque me piden crear ahora un puntero a fantastruco_t* inicializado apropidamente con face_up = 1 yel atributo __archetype = null. Asumo que la anterior de sleep y wakeup ya era genérica.
     fantastruco_t* fantastruco = malloc(sizeof(fantastruco_t));
     fantastruco -> face_up = 1;
     fantastruco -> __archetype = NULL; 
