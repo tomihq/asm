@@ -35,7 +35,6 @@ ESTADISTICAS_SIZE EQU 7
 
 ;segmentacion_t* segmentar_casos(caso_t* arreglo_casos, int largo)
 global segmentar_casos
-/*
 segmentar_casos:
     push rbp 
     mov rbp, rsp 
@@ -127,6 +126,9 @@ segmentar_casos:
     .fillSegmentationPointerCasesLoop:
         cmp r8, r13 
         je .end 
+        ;r12 caso_t* arreglo_casos
+        ;r8 indice para barrer caso_t* (0, 1, 2 ... largo)
+        ;r10 para calcular el desplazamiento basado en indice * tamaño caso_t
         mov r10, r8
         imul r10, CASO_SIZE
         lea r9, [r12 + r10] ;struct actual = &arreglo_casos[i]. Es obligatorio que me traiga el puntero porque el struct pesa MAS que 64 bits. NO me lo puedo traer entero.
@@ -195,7 +197,6 @@ segmentar_casos:
         pop r12
         pop rbp 
         ret
-*/
 
 
 ; caso_t* arreglo_casos - RDI
